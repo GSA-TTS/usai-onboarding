@@ -53,7 +53,7 @@ Haiku 4.5 | Anthropic | $1.10 | $5.50
 
 ### System prompts
 
-You will have the ability to modify the USAi Chat’s system prompts to improve behavior, security, performance, and alignment with Federal AI requirements. [GSA's current system prompts](https://github.com/user-attachments/files/23167987/USAi.Chat._.System.Prompts.docx) are attached as a reference. Please send a word document tailored to your agency’s needs to partnerships@usai.gov. Some notes to consider:
+You will have the ability to modify the USAi Chat’s system prompts to improve behavior, security, performance, and alignment with Federal AI requirements. [GSA's current system prompts](https://github.com/GSA-TTS/usai-onboarding/blob/main/USAi%20Chat%20_%20System%20Prompts.docx) are attached as a reference. Please send a word document tailored to your agency’s needs to partnerships@usai.gov. Some notes to consider:
 
 - We've seen these increase GSA's LLM safeguards from approximately 78% to 90%.
 - To ensure optimal performance and manage costs, it is critical to keep system prompts clear and concise. Overly complex, restrictive, or lengthy prompts can degrade performance and increase operational expenses.
