@@ -22,7 +22,7 @@ Once we have the tenant instance built, and the firewalls open to your IP addres
 We don’t have strong preferences about how we establish this cadence and what topics to cover, but we know we do want to hear and learn from your experiences with USAi! 
 ## What we need from you
 ### Security
-- **Access security package** - To access the GSA Moderate ATO security package (ATO letter, pen test results, POA&M, etc), please complete the [USAi security package access request spreadsheet](https://github.com/user-attachments/files/23167938/Template.USAi.Security.Package.Access.Request.Spreadsheet.V1.1.xlsx). Short-term access will be available via a pin for 7 days, but if access is needed for longer we can accommodate that too. Please return the spreadsheet to **usai-security@gsa.gov**.
+- **Access security package** - To access the GSA Moderate ATO security package (ATO letter, pen test results, POA&M, etc), please complete the [USAi security package access request spreadsheet](https://github.com/GSA-TTS/usai-onboarding/blob/main/(Template)%20USAi%20Security%20Package%20Access%20Request%20Spreadsheet%20V1.1.xlsx). Short-term access will be available via a pin for 7 days, but if access is needed for longer we can accommodate that too. Please return the spreadsheet to **usai-security@gsa.gov**.
 - **(Optional) SSPP template** - To help agencies comply with the customer responsibility matrix in the MOU, we developed an [optional SSPP template](https://github.com/user-attachments/files/23167962/Template.USAi-Partner.SSPP.V1.0.1.docx). Please feel free to use this template if it’s helpful, or not. We do not need this returned to us.
 
 ### Firewall requests
