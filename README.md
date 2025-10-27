@@ -10,7 +10,7 @@ After the MOU is signed, we’ll schedule a kick-off call to:
 - Walk through implementation details found in this guide
 - Answer any questions you may have
 
-Please see the [onboarding slides](https://github.com/user-attachments/files/23167882/USAi._.Partner.Onboarding.pdf). We likely won’t walk through these in detail, but they can serve as a read-ahead.
+Please see the [onboarding slides](https://github.com/GSA-TTS/usai-onboarding/blob/main/USAi%20_%20Partner%20Onboarding.pdf). We likely won’t walk through these in detail, but they can serve as a read-ahead.
 ### Single sign-on integration co-work 
 Once we have the tenant instance built, and the firewalls open to your IP addresses (see below), we’ll schedule a co-work with your team to connect your single sign-on solution to USAi. In this meeting you should expect:
 - Partner will configure USAi as a client application in their IDP console
