@@ -65,4 +65,4 @@ The workflow for API management is not included in USAi (request, approve, assig
 ### Privacy policy
 You may want to think about what data you are comfortable with users inputting into USAi based on agency use cases, strategy, risk tolerance, and policy (e.g. CUI/ PII). Please see the USAi [privacy policy](https://www.usai.gov/privacy/) and [rules of behavior](https://www.usai.gov/rules-of-behavior/) as reference. 
 ### Comms
-We are sharing [GSA's comms regarding our implementation of AI](https://github.com/user-attachments/files/23168016/Sample.GSA.comms.docx) as reference. 
+We are sharing [GSA's comms regarding our implementation of AI](https://github.com/GSA-TTS/usai-onboarding/blob/main/Sample%20GSA%20comms.docx) as reference. 
