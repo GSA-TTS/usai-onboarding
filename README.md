@@ -22,10 +22,12 @@ Once we have the tenant instance built, and the firewalls open to your IP addres
 We don’t have strong preferences about how we establish this cadence and what topics to cover, but we know we do want to hear and learn from your experiences with USAi! 
 ## What we need from you
 ### Security
-- **Access security package** - To access the GSA Moderate ATO security package (ATO letter, pen test results, POA&M, etc), please complete the [USAi security package access request spreadsheet](https://github.com/user-attachments/files/23004156/Template.USAi.Security.Package.Access.Request.Spreadsheet.V1.1.xlsx). Short-term access will be available via a pin for 7 days, but if access is needed for longer we can accommodate that too. Please return the spreadsheet to **usai-security@gsa.gov**.
-- **(Optional) SSPP template** - To help agencies comply with the customer responsibility matrix in the MOU, we developed an [optional SSPP template](https://github.com/user-attachments/files/23004224/Template.USAi-Partner.SSPP.V1.0.1.docx). Please feel free to use this template if it’s helpful, or not. We do not need this returned to us. 
+- **Access security package** - To access the GSA Moderate ATO security package (ATO letter, pen test results, POA&M, etc), please complete the [USAi security package access request spreadsheet](https://github.com/user-attachments/files/23167938/Template.USAi.Security.Package.Access.Request.Spreadsheet.V1.1.xlsx). Short-term access will be available via a pin for 7 days, but if access is needed for longer we can accommodate that too. Please return the spreadsheet to **usai-security@gsa.gov**.
+- **(Optional) SSPP template** - To help agencies comply with the customer responsibility matrix in the MOU, we developed an [optional SSPP template](https://github.com/user-attachments/files/23167962/Template.USAi-Partner.SSPP.V1.0.1.docx). Please feel free to use this template if it’s helpful, or not. We do not need this returned to us.
+
 ### Firewall requests
-To ensure we open up the firewall to the right egress IP addresses for your agency, please complete the [USAi firewall request spreadsheet](https://github.com/user-attachments/files/23004254/Template.USAi-Partner.Firewall.Request.Update.V1.1.xlsx). Please return the spreadsheet to **usai-security@gsa.gov**.
+
+To ensure we open up the firewall to the right egress IP addresses for your agency, please complete the [USAi firewall request spreadsheet](https://github.com/user-attachments/files/23167977/Template.USAi-Partner.Firewall.Request.Update.V1.1.xlsx). Please return the spreadsheet to **usai-security@gsa.gov**.
 - **Note:** it usually takes the GSA team 7 days to make the firewall updates, so this item is a little time-sensitive.
 
 ### Models to deploy
@@ -51,16 +53,16 @@ Haiku 4.5 | Anthropic | $1.10 | $5.50
 
 ### System prompts
 
-You will have the ability to modify the USAi Chat’s system prompts to improve behavior, security, performance, and alignment with Federal AI requirements. [GSA's current system prompts](https://github.com/user-attachments/files/23029271/USAi.Chat._.System.Prompts.docx) are attached as a reference. Please send a word document tailored to your agency’s needs to partnerships@usai.gov. Some notes to consider:
+You will have the ability to modify the USAi Chat’s system prompts to improve behavior, security, performance, and alignment with Federal AI requirements. [GSA's current system prompts](https://github.com/user-attachments/files/23167987/USAi.Chat._.System.Prompts.docx) are attached as a reference. Please send a word document tailored to your agency’s needs to partnerships@usai.gov. Some notes to consider:
 
 - We've seen these increase GSA's LLM safeguards from approximately 78% to 90%.
 - To ensure optimal performance and manage costs, it is critical to keep system prompts clear and concise. Overly complex, restrictive, or lengthy prompts can degrade performance and increase operational expenses.
 
 ### API user management
-The workflow for API management is not included in USAi (request, approve, assign). At this time we’ve decided to default to whatever is customary at an agency, or their preference (e.g. Jira, ServiceNow, email, etc). Agencies have discretion on how they’d like to manage this, and we’ll incorporate it into your agency-specific API documentation upon implementation. Please update the [API documentation](https://github.com/user-attachments/files/23061543/Template.USAi.API.guidance.docx) in the section highlighted in yellow and return it to partnerships@usai.gov. 
+The workflow for API management is not included in USAi (request, approve, assign). At this time we’ve decided to default to whatever is customary at an agency, or their preference (e.g. Jira, ServiceNow, email, etc). Agencies have discretion on how they’d like to manage this, and we’ll incorporate it into your agency-specific API documentation upon implementation. Please update the [API documentation](https://github.com/user-attachments/files/23168003/Template.USAi.API.guidance.docx) in the section highlighted in yellow and return it to partnerships@usai.gov. 
 
 ## Additional things for you to (potentially) think about
 ### Privacy policy
 You may want to think about what data you are comfortable with users inputting into USAi based on agency use cases, strategy, risk tolerance, and policy (e.g. CUI/ PII). Please see the USAi [privacy policy](https://www.usai.gov/privacy/) and [rules of behavior](https://www.usai.gov/rules-of-behavior/) as reference. 
 ### Comms
-We are sharing [GSA's comms regarding our implementation of AI](https://github.com/user-attachments/files/23054676/Sample.GSA.comms.docx) as reference. 
+We are sharing [GSA's comms regarding our implementation of AI](https://github.com/user-attachments/files/23168016/Sample.GSA.comms.docx) as reference. 
