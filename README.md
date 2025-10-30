@@ -59,7 +59,7 @@ You will have the ability to modify the USAi Chat’s system prompts to improve 
 - To ensure optimal performance and manage costs, it is critical to keep system prompts clear and concise. Overly complex, restrictive, or lengthy prompts can degrade performance and increase operational expenses.
 
 ### API user management
-The workflow for API management is not included in USAi (request, approve, assign). At this time we’ve decided to default to whatever is customary at an agency, or their preference (e.g. Jira, ServiceNow, email, etc). Agencies have discretion on how they’d like to manage this, and we’ll incorporate it into your agency-specific API documentation upon implementation. Please update the [API documentation](https://github.com/GSA-TTS/usai-onboarding/raw/main/(Template)%20USAi%20API%20guidance.docx) in the section highlighted in yellow and return it to **usai-security@gsa.gov**. 
+The workflow for API management is not included in USAi (request, approve, assign). At this time we’ve decided to default to whatever is customary at an agency, or their preference (e.g. Jira, ServiceNow, email, etc). Agencies have discretion on how they’d like to manage this, and we’ll incorporate it into your agency-specific API documentation upon implementation. Please update the [API documentation](https://github.com/GSA-TTS/usai-onboarding/raw/main/(Template)%20USAi%20API%20guidance.docx) in the section highlighted in yellow and return it to partnerships@usai.gov. 
 
 ## Additional things for you to (potentially) think about
 ### Privacy policy
