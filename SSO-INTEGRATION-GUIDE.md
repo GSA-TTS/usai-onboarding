@@ -35,7 +35,7 @@ Before beginning the integration, ensure you have:
 
 ### From Your Agency
 - [ ] Admin access to your Identity Provider (Azure AD, Okta, Ping, etc.)
-- [ ] **For Microsoft Entra ID users**: Your Tenant ID (GUID) - enables automated Terraform provisioning
+- [ ] **For Microsoft Entra ID users**: Your Tenant ID (GUID)
 - [ ] Authority to register new applications in your IdP (or consent to USAi-created app for Entra)
 - [ ] Authority to grant admin consent for application permissions (Entra ID)
 - [ ] List of user attributes available for mapping
@@ -299,6 +299,35 @@ SCIM (System for Cross-domain Identity Management) enables automated user lifecy
 - **Real-time Updates**: User attribute changes sync immediately
 - **Automated Deprovisioning**: Users removed from IdP are automatically deactivated in USAi
 - **Group Management**: Group memberships are synchronized for access control
+- **Centralized Authorization**: Use SCIM groups for role-based access control
+
+### SCIM Configuration Options
+
+USAi supports two mutually exclusive approaches for user provisioning:
+
+#### Option 1: SCIM Provisioning (Recommended for Enterprise)
+When SCIM provisioning is enabled, Just-in-Time (JIT) provisioning is automatically disabled. Users are **only** created via SCIM, not on first sign-in. This provides:
+- ✅ **Centralized control** - IT controls who has access via IdP
+- ✅ **Group-based authorization** - Roles assigned via SCIM group membership
+- ✅ **Better audit trail** - All provisioning events logged in IdP
+- ✅ **Prevents unauthorized access** - Users can't self-provision on first login
+
+**When you enable SCIM provisioning:**
+The USAi team will automatically configure:
+- First Broker Login Flow: Disabled for automatic user creation
+- SCIM as the sole provisioning method
+- Group synchronization (if requested)
+
+**Important:** Users must be provisioned via SCIM before they can sign in. If a user attempts to sign in before being provisioned via SCIM, they will receive an access denied message.
+
+#### Option 2: Just-in-Time (JIT) Provisioning (Default without SCIM)
+If you do **not** enable SCIM provisioning, JIT provisioning is used by default. Users are automatically created on first sign-in. This provides:
+- ✅ **Easier initial rollout** - Users can access immediately after SSO setup
+- ✅ **Self-service access** - No manual provisioning required
+- ⚠️ **Less control** - Any user with IdP access can create an account
+- ⚠️ **No group synchronization** - Group memberships must be managed manually in USAi
+
+**Note:** You cannot have both SCIM and JIT enabled simultaneously. Enabling SCIM automatically disables JIT provisioning.
 
 ### SCIM Configuration Requirements
 
@@ -307,6 +336,11 @@ The USAi team will provide:
 - **Authentication Method**: Bearer Token
 - **Bearer Token**: Long-lived API token for SCIM operations
 - **Supported Operations**: Create, Read, Update, Delete, Search (for Users and Groups)
+
+**What to tell us:**
+- Whether you want SCIM provisioning enabled (this will automatically disable JIT provisioning)
+- Whether you want group synchronization enabled
+- Which IdP groups should map to USAi roles (if using group-based authorization)
 
 ### Step 1: Configure SCIM in Your IdP
 
@@ -322,20 +356,32 @@ The USAi team will provide:
    ```
 5. Click **Test Connection** to validate
 6. Configure **Mappings**:
-   - **Provision Azure Active Directory Users**
-     - userName → userName
-     - Switch([IsSoftDeleted], , "False", "True", "True", "False") → active
-     - mail → emails[type eq "work"].value
-     - givenName → name.givenName
-     - surname → name.familyName
-     - displayName → displayName
    
-   - **Provision Azure Active Directory Groups** (if using group-based access)
-     - displayName → displayName
-     - members → members
+   **Provision Azure Active Directory Users:**
+   - userName → userName
+   - Switch([IsSoftDeleted], , "False", "True", "True", "False") → active
+   - mail → emails[type eq "work"].value
+   - givenName → name.givenName
+   - surname → name.familyName
+   - displayName → displayName
+   
+   **Provision Azure Active Directory Groups** (enable this for group-based authorization):
+   - displayName → displayName
+   - members → members
+   
+   **Important for SCIM-Only Provisioning:**
+   - Go to **Settings** > **Scope**
+   - Select **Sync only assigned users and groups**
+   - This ensures only explicitly assigned users are provisioned (prevents self-provisioning)
 
-7. Set **Provisioning Status** to **On**
-8. Click **Save** and wait for initial sync
+7. **Configure Group Assignment** (if using group-based authorization):
+   - Navigate to **Users and groups** in your Enterprise Application
+   - Click **Add user/group**
+   - Select the Entra ID groups that should have access to USAi
+   - These groups will be synchronized via SCIM with their members
+
+8. Set **Provisioning Status** to **On**
+9. Click **Save** and wait for initial sync (typically 20-40 minutes)
 
 #### For Okta
 
@@ -427,6 +473,45 @@ The testing guide includes:
    - Assign users to the group
    - Assign group to USAi application
    - Verify group and members appear in USAi
+
+### Group-Based Authorization Workflow
+
+If you're using SCIM-only provisioning with group-based authorization, here's the recommended workflow:
+
+#### Initial Setup
+1. **Create Entra ID Groups** for different USAi roles/access levels:
+   - Example: `USAi-Users`, `USAi-Admins`, `USAi-PowerUsers`
+2. **Assign groups to the USAi Enterprise Application** in Entra
+3. **Configure SCIM group provisioning** as described above
+4. **Wait for initial SCIM sync** to complete
+
+#### User Onboarding Process
+1. **Add user to appropriate Entra ID group(s)**
+   - User membership is synchronized to USAi via SCIM
+   - User account is automatically created in USAi
+   - Group memberships are reflected in USAi
+2. **Map SCIM groups to USAi roles** (USAi team configures):
+   - Entra group `USAi-Admins` → USAi Admin role
+   - Entra group `USAi-Users` → USAi User role
+3. **User can now sign in** via SSO
+   - Authentication happens via OIDC/SAML
+   - Authorization (roles) determined by SCIM group membership
+
+#### User Offboarding Process
+1. **Remove user from Entra ID group** or **unassign from application**
+2. **SCIM sync automatically deactivates user** in USAi
+3. **User loses access** on next authentication attempt
+
+#### Role Changes
+1. **Change user's group membership** in Entra ID
+2. **SCIM sync updates** group membership in USAi
+3. **User's roles/permissions automatically updated**
+
+**Benefits of this approach:**
+- No manual user management in USAi
+- Authorization managed centrally in Entra ID
+- Automatic compliance with organizational group policies
+- Clear audit trail of all access changes
 
 ### SCIM Monitoring and Troubleshooting
 
