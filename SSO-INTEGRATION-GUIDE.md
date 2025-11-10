@@ -43,7 +43,7 @@ Before beginning the integration, ensure you have:
 - [ ] IP addresses whitelisted (see [Firewall requests](#firewall-requests) in main README)
 
 ### From USAi Team
-- [ ] USAi tenant instance URL (e.g., `https://your-agency.usai.gov`)
+- [ ] Keycloak URL: `https://auth.usai.gov`
 - [ ] Keycloak realm name for your agency
 - [ ] Client ID and Client Secret (for OIDC)
 - [ ] Metadata URLs or certificates (for SAML)
@@ -109,7 +109,7 @@ If your agency uses Microsoft Entra ID (formerly Azure AD), USAi provides a stre
    ```
    Name: USAi - [Your Agency Name]
    Supported account types: Accounts in this organizational directory only
-   Redirect URI: Web - https://your-agency.usai.gov/realms/your-realm/broker/oidc/endpoint
+   Redirect URI: Web - https://auth.usai.gov/realms/your-realm/broker/oidc/endpoint
    ```
 4. After creation, note the **Application (client) ID**
 5. Navigate to **Certificates & secrets** > **New client secret**
@@ -166,8 +166,8 @@ This approach is useful if you want hands-on involvement in the Keycloak configu
    ```
    App integration name: USAi - [Your Agency Name]
    Grant type: Authorization Code
-   Sign-in redirect URIs: https://your-agency.usai.gov/realms/your-realm/broker/oidc/endpoint
-   Sign-out redirect URIs: https://your-agency.usai.gov/realms/your-realm/broker/oidc/endpoint
+   Sign-in redirect URIs: https://auth.usai.gov/realms/your-realm/broker/oidc/endpoint
+   Sign-out redirect URIs: https://auth.usai.gov/realms/your-realm/broker/oidc/endpoint
    ```
 4. Click **Save** and note the **Client ID** and **Client Secret**
 
@@ -206,7 +206,7 @@ During the co-work session, the USAi team will configure Keycloak with your IdP 
 
 ### Step 3: Test OIDC Connection
 
-1. Navigate to `https://your-agency.usai.gov`
+1. Navigate to `https://auth.usai.gov`
 2. Click the SSO button for your agency
 3. You should be redirected to your IdP login page
 4. After successful authentication, you should be redirected back to USAi
@@ -217,8 +217,8 @@ During the co-work session, the USAi team will configure Keycloak with your IdP 
 ### Step 1: Download USAi SAML Metadata
 
 The USAi team will provide:
-- **Entity ID**: `https://your-agency.usai.gov/realms/your-realm`
-- **ACS URL**: `https://your-agency.usai.gov/realms/your-realm/broker/saml/endpoint`
+- **Entity ID**: `https://auth.usai.gov/realms/your-realm`
+- **ACS URL**: `https://auth.usai.gov/realms/your-realm/broker/saml/endpoint`
 - **SAML Metadata XML**: Complete metadata file
 
 ### Step 2: Register USAi in Your IdP
@@ -251,8 +251,8 @@ The USAi team will provide:
    ```
 4. Configure SAML Settings:
    ```
-   Single sign on URL: https://your-agency.usai.gov/realms/your-realm/broker/saml/endpoint
-   Audience URI (SP Entity ID): https://your-agency.usai.gov/realms/your-realm
+   Single sign on URL: https://auth.usai.gov/realms/your-realm/broker/saml/endpoint
+   Audience URI (SP Entity ID): https://auth.usai.gov/realms/your-realm
    Name ID format: EmailAddress
    Application username: Email
    ```
@@ -283,7 +283,7 @@ During the co-work session, the USAi team will:
 
 ### Step 4: Test SAML Connection
 
-1. Navigate to `https://your-agency.usai.gov`
+1. Navigate to `https://auth.usai.gov`
 2. Click the SSO button for your agency
 3. You should be redirected to your IdP SAML login page
 4. After authentication, verify SAML response contains required attributes
@@ -332,7 +332,7 @@ If you do **not** enable SCIM provisioning, JIT provisioning is used by default.
 ### SCIM Configuration Requirements
 
 The USAi team will provide:
-- **SCIM Base URL**: `https://your-agency.usai.gov/realms/your-realm/scim/v2`
+- **SCIM Base URL**: `https://auth.usai.gov/realms/your-realm/scim/v2`
 - **Authentication Method**: Bearer Token
 - **Bearer Token**: Long-lived API token for SCIM operations
 - **Supported Operations**: Create, Read, Update, Delete, Search (for Users and Groups)
@@ -351,7 +351,7 @@ The USAi team will provide:
 3. Set **Provisioning Mode** to **Automatic**
 4. Configure **Admin Credentials**:
    ```
-   Tenant URL: https://your-agency.usai.gov/realms/your-realm/scim/v2
+   Tenant URL: https://auth.usai.gov/realms/your-realm/scim/v2
    Secret Token: [Bearer token provided by USAi team]
    ```
 5. Click **Test Connection** to validate
@@ -391,7 +391,7 @@ The USAi team will provide:
 4. Check **Enable API integration**
 5. Configure:
    ```
-   Base URL: https://your-agency.usai.gov/realms/your-realm/scim/v2
+   Base URL: https://auth.usai.gov/realms/your-realm/scim/v2
    API Token: [Bearer token provided by USAi team]
    ```
 6. Click **Test API Credentials**
@@ -410,7 +410,7 @@ The USAi team will provide:
 
 ```bash
 # Set environment variables
-export SCIM_BASE_URL="https://your-agency.usai.gov/realms/your-realm/scim/v2"
+export SCIM_BASE_URL="https://auth.usai.gov/realms/your-realm/scim/v2"
 export SCIM_TOKEN="your-bearer-token"
 
 # Test 1: Get Service Provider Configuration
@@ -627,7 +627,7 @@ During the co-work session, we'll configure mappers like:
 **Cause**: Redirect URI mismatch between IdP and Keycloak
 
 **Solution**: 
-1. Verify redirect URI in IdP exactly matches: `https://your-agency.usai.gov/realms/your-realm/broker/oidc/endpoint`
+1. Verify redirect URI in IdP exactly matches: `https://auth.usai.gov/realms/your-realm/broker/oidc/endpoint`
 2. Check for trailing slashes or http vs https mismatches
 3. Contact USAi team to verify Keycloak configuration
 
@@ -746,7 +746,7 @@ For agencies using Microsoft Entra ID, USAi can automatically configure the inte
 # What your agency creates in your Entra tenant
 Application Registration:
   - Name: USAi - [Your Agency Name]
-  - Redirect URI: https://your-agency.usai.gov/realms/your-realm/broker/oidc/endpoint
+  - Redirect URI: https://auth.usai.gov/realms/your-realm/broker/oidc/endpoint
   - Client Type: Web
   - Client Secret: Generated by your admin
   - Token Claims: email, given_name, family_name, upn
@@ -793,7 +793,7 @@ Keycloak Identity Provider:
 ```yaml
 # Application Registration
 Client Type: Web
-Redirect URI: https://your-agency.usai.gov/realms/your-realm/broker/oidc/endpoint
+Redirect URI: https://auth.usai.gov/realms/your-realm/broker/oidc/endpoint
 
 # Endpoints (replace {tenant} with your tenant ID)
 Authorization: https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize
@@ -831,7 +831,7 @@ family_name: family_name
 
 ```yaml
 # Base URL
-Base: https://your-agency.usai.gov/realms/your-realm/scim/v2
+Base: https://auth.usai.gov/realms/your-realm/scim/v2
 
 # Endpoints
 Service Provider Config: /ServiceProviderConfig
