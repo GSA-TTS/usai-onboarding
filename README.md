@@ -12,11 +12,18 @@ After the MOU is signed, we’ll schedule a kick-off call to:
 
 Please see the [onboarding slides](https://github.com/GSA-TTS/usai-onboarding/raw/main/USAi%20_%20Partner%20Onboarding.pdf). We likely won’t walk through these in detail, but they can serve as a read-ahead.
 ### Single sign-on integration co-work 
-Once we have the tenant instance built, and the firewalls open to your IP addresses (see below), we’ll schedule a co-work with your team to connect your single sign-on solution to USAi. In this meeting you should expect:
+Once we have the tenant instance built, and the firewalls open to your IP addresses (see below), we'll schedule a co-work with your team to connect your single sign-on solution to USAi. In this meeting you should expect:
 - Partner will configure USAi as a client application in their IDP console
 - We will exchange ClientID, Secret, and discovery endpoint and redirect URI
 - We will setup mapping for properties (e.g. email address, name, org codes)
 - We will validate that the partner can sign into the system with their IDP
+
+**For detailed SSO configuration information, see the [Single Sign-On Integration Guide](./SSO-INTEGRATION-GUIDE.md).**
+
+USAi uses Keycloak and supports:
+- **OIDC (OpenID Connect)** - Recommended for modern cloud IdPs
+- **SAML 2.0** - For enterprise SSO requirements
+- **SCIM 2.0** - Automated user and group provisioning
 
 ### Recurring syncs
 We don’t have strong preferences about how we establish this cadence and what topics to cover, but we know we do want to hear and learn from your experiences with USAi! 
