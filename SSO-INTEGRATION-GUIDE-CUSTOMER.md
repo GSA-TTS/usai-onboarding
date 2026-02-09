@@ -296,41 +296,199 @@ Tell us you'd like SCIM enabled, and we'll provide:
 - **SCIM Base URL**: `https://auth.usai.gov/realms/your-realm/scim/v2`
 - **Bearer Token**: For authenticating SCIM requests
 
-#### Microsoft Entra ID
+> ⚠️ Replace `your-realm` in the URL above with the realm name provided by the USAi team.
 
-1. In the Azure Portal, go to your **USAi Enterprise Application**
-2. Navigate to **Provisioning** → **Get started**
-3. Set **Provisioning Mode** to **Automatic**
-4. Under **Admin Credentials**, enter:
+#### Microsoft Entra ID — SCIM Connector Setup
 
-   | Field | Value |
-   |-------|-------|
-   | **Tenant URL** | `https://auth.usai.gov/realms/your-realm/scim/v2` |
-   | **Secret Token** | The bearer token we provided |
+> **🔧 Manual Configuration Required**
+>
+> Unlike the SSO/OIDC setup (where you send us credentials and we handle the backend), the SCIM provisioning connector **must be configured by your team** directly in the Azure Portal. This connector lives in your Entra tenant and requires your admin privileges — the USAi team cannot create or configure it on your behalf.
+>
+> This guide provides complete step-by-step instructions so you can set it up independently. If you'd prefer to walk through it together, we're happy to schedule a co-work session.
 
-5. Click **Test Connection** — you should see a success message
-6. Under **Mappings**, verify:
+##### Prerequisites
 
-   **User mappings:**
-   | Azure AD Attribute | SCIM Attribute |
-   |-------------------|----------------|
-   | `userName` | `userName` |
-   | `mail` | `emails[type eq "work"].value` |
-   | `givenName` | `name.givenName` |
-   | `surname` | `name.familyName` |
-   | `displayName` | `displayName` |
-   | `Switch([IsSoftDeleted]...)` | `active` |
+Before you begin, make sure you have:
+- [ ] The **SCIM Base URL** and **Bearer Token** from the USAi team
+- [ ] **Admin access** to your Azure/Entra tenant
+- [ ] An existing **Enterprise Application** for USAi (if you set up OIDC or SAML, you may already have one; if not, you'll create one below)
 
-   **Group mappings** (if using group-based access):
-   | Azure AD Attribute | SCIM Attribute |
-   |-------------------|----------------|
-   | `displayName` | `displayName` |
-   | `members` | `members` |
+##### Step 1: Create the Enterprise Application for Provisioning
 
-7. Under **Settings** → **Scope**, select **Sync only assigned users and groups**
-8. If using groups: go to **Users and groups**, click **Add user/group**, and select the groups that should have USAi access
-9. Set **Provisioning Status** to **On** and click **Save**
-10. Initial sync typically takes 20–40 minutes
+> ⚠️ **Important: You will likely need a separate Enterprise Application for SCIM provisioning.** If you set up OIDC earlier using an **App Registration**, the corresponding Enterprise Application in your tenant will have the **Provisioning** option grayed out. This is a known Entra ID limitation — App Registration-based Enterprise Apps do not support provisioning configuration.
+>
+> You must create a **new Enterprise Application** using the **Non-gallery** option (described below) specifically for SCIM provisioning. This is normal and expected — many agencies have two Entra entries for USAi: one for SSO (App Registration) and one for provisioning (Non-gallery Enterprise App).
+
+**Create the provisioning Enterprise Application:**
+
+1. Sign in to the [Azure Portal](https://portal.azure.com)
+2. Navigate to **Azure Active Directory** → **Enterprise applications**
+3. Click **+ New application** (at the top)
+4. Click **+ Create your own application**
+5. Enter the name: `USAi Provisioning - [Your Agency Name]`
+6. Select **Integrate any other application you don't find in the gallery (Non-gallery)**
+7. Click **Create**
+8. Wait for the application to be created — you'll be taken to its overview page
+
+> 💡 **Why a separate app?** The "Provisioning" blade in Entra ID is only available on Enterprise Applications created through the Non-gallery path. App Registrations (used for OIDC) create a different type of service principal that doesn't expose the provisioning UI. This is a Microsoft platform limitation, not a USAi limitation.
+
+> **Already have an Enterprise Application where Provisioning is NOT grayed out?** (For example, if you created a Non-gallery app for SAML.) You can use that existing application instead — skip to Step 2.
+
+##### Step 2: Enable Provisioning
+
+1. In your USAi provisioning Enterprise Application, click **Provisioning** in the left sidebar
+2. If **Provisioning** is grayed out, you are on the wrong Enterprise Application — go back to Step 1 and create a new Non-gallery application
+3. Click **Get started**
+4. Set **Provisioning Mode** to **Automatic**
+
+##### Step 3: Enter Admin Credentials
+
+Under the **Admin Credentials** section, enter the following:
+
+| Field | Value |
+|-------|-------|
+| **Tenant URL** | `https://auth.usai.gov/realms/your-realm/scim/v2` |
+| **Secret Token** | *(paste the bearer token provided by the USAi team)* |
+
+Click **Test Connection**. You should see:
+
+> ✅ *"The supplied credentials are authorized to enable provisioning."*
+
+If the test fails, double-check:
+- The URL has no trailing slash and no typos
+- The bearer token was copied completely (no leading/trailing spaces)
+- Your network/firewall allows outbound HTTPS traffic to `auth.usai.gov`
+
+Click **Save** before proceeding.
+
+##### Step 4: Configure User Attribute Mappings
+
+1. Under **Mappings**, click **Provision Azure Active Directory Users**
+2. Set **Enabled** to **Yes**
+3. Under **Attribute Mappings**, configure the following mappings. Remove any default mappings that are not in this list, and add/edit as needed:
+
+   | Azure Active Directory Attribute | USAi (SCIM) Attribute | Mapping Type |
+   |----------------------------------|-----------------------|-------------|
+   | `userPrincipalName` | `userName` | Direct |
+   | `Switch([IsSoftDeleted], , "False", "True", "True", "False")` | `active` | Expression |
+   | `mail` | `emails[type eq "work"].value` | Direct |
+   | `givenName` | `name.givenName` | Direct |
+   | `surname` | `name.familyName` | Direct |
+   | `displayName` | `displayName` | Direct |
+
+   **How to set up the `active` attribute (soft-delete expression):**
+   1. Click the `active` mapping (or click **Add New Mapping** if it doesn't exist)
+   2. Set **Mapping type** to **Expression**
+   3. In the **Expression** field, enter exactly:
+      ```
+      Switch([IsSoftDeleted], , "False", "True", "True", "False")
+      ```
+   4. Set **Target attribute** to `active`
+   5. Click **OK**
+
+   > 💡 This expression ensures that when a user is soft-deleted in Entra (disabled/removed), they are automatically deactivated in USAi.
+
+4. Under **Target Object Actions**, ensure these are checked:
+   - ✅ Create
+   - ✅ Update
+   - ✅ Delete
+
+5. Click **Save**
+
+##### Step 5: Configure Group Provisioning (Optional but Recommended)
+
+If you want to use group-based access control (recommended), you need to enable group provisioning:
+
+1. Go back to **Mappings**
+2. Click **Provision Azure Active Directory Groups**
+3. Set **Enabled** to **Yes**
+4. Configure the following attribute mappings:
+
+   | Azure Active Directory Attribute | USAi (SCIM) Attribute | Mapping Type |
+   |----------------------------------|-----------------------|-------------|
+   | `displayName` | `displayName` | Direct |
+   | `members` | `members` | Direct |
+
+5. Under **Target Object Actions**, ensure these are checked:
+   - ✅ Create
+   - ✅ Update
+   - ✅ Delete
+
+6. Click **Save**
+
+##### Step 6: Set the Provisioning Scope
+
+This controls which users and groups are synced to USAi.
+
+1. Go to **Provisioning** → **Settings**
+2. Under **Scope**, select:
+
+   **Sync only assigned users and groups** *(Recommended)*
+
+   > ⚠️ This is important. This setting ensures that only users and groups you explicitly assign to the USAi application are provisioned. If you select "Sync all users and groups," every user in your directory would be provisioned to USAi, which is likely not what you want.
+
+3. Click **Save**
+
+##### Step 7: Assign Users and Groups to the Application
+
+Now you need to tell Entra which users and groups should be provisioned to USAi:
+
+1. In your USAi Enterprise Application, click **Users and groups** in the left sidebar
+2. Click **Add user/group**
+3. Choose how you want to manage access:
+
+   **Option A: Assign groups (Recommended)**
+   - Click **None Selected** under **Groups**
+   - Search for and select the Entra ID groups that should have access to USAi
+   - Example groups: `USAi-Users`, `USAi-Admins`, `USAi-PowerUsers`
+   - Click **Select**, then **Assign**
+   - All members of those groups will be provisioned, and group memberships will be synced
+
+   **Option B: Assign individual users**
+   - Click **None Selected** under **Users**
+   - Search for and select individual users
+   - Click **Select**, then **Assign**
+
+   > 💡 We recommend **Option A** (groups). It lets you manage USAi access by adding/removing users from Entra groups, rather than individually assigning them to the application.
+
+##### Step 8: Start Provisioning
+
+1. Go back to **Provisioning**
+2. Set **Provisioning Status** to **On**
+3. Click **Save**
+
+The initial provisioning cycle will begin. This typically takes **20–40 minutes** for the first sync, depending on the number of users and groups.
+
+##### Step 9: Verify the Initial Sync
+
+1. Stay on the **Provisioning** page and wait for the initial cycle to complete
+2. Click **Provisioning logs** (in the left sidebar under **Activity**) to review the results
+3. Look for:
+   - **Status: Success** — Users/groups were created in USAi
+   - **Status: Failure** — Review the error details (see [Troubleshooting](#troubleshooting) below)
+   - **Status: Skipped** — User didn't meet scope requirements (check group/user assignments)
+
+4. Common things to verify in the logs:
+   - Each assigned user shows a successful "Create" action
+   - Each assigned group shows a successful "Create" action (if group sync is enabled)
+   - User attributes (email, name) were sent correctly
+
+5. **Let the USAi team know** once your initial sync is complete so we can verify users appeared correctly on our side.
+
+##### Step 10: Monitor Ongoing Provisioning
+
+After the initial sync, Entra runs incremental syncs approximately every **40 minutes**. You can monitor these:
+
+1. **Provisioning logs**: Navigate to **Enterprise Applications** → **USAi** → **Provisioning logs**
+   - Filter by date, status, or action to review specific events
+   - Download logs for detailed analysis if needed
+
+2. **Audit logs**: Navigate to **Azure Active Directory** → **Audit logs**
+   - Filter by **Service: Account Provisioning** to see provisioning-related events
+
+3. **Alerts**: Azure can email you if provisioning enters quarantine (repeated failures)
+   - Configure a **Notification Email** under **Provisioning** → **Settings**
+   - Enter the email of the person who should receive provisioning alerts
 
 #### Okta
 
