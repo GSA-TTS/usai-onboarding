@@ -49,11 +49,6 @@ Grok 4 | xAI | $5.50 | $27.50
 Haiku 3.5 | Anthropic | $0.80 | $4.00
 Llama 3.2 11B | Meta | $0.16 | $0.16
 Llama 4 Maverick | Meta | $0.24 | $0.97
-Opus 4 | Anthropic | $15.00 | $75.00 
-Opus 4.5 | Anthropic | $5.00 | $25.00
-Sonnet 3.7 | Anthropic | $3.00 | $15.00 
-Sonnet 4 | Anthropic | $3.00 | $15.00
-Sonnet 4.5 | Anthropic | $3.00 | $15.00
 
 
 ### System prompts
