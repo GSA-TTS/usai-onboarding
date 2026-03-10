@@ -60,6 +60,19 @@ You will have the ability to modify the USAi Chat’s system prompts to improve 
 ### API user management
 The workflow for API management is not included in USAi (request, approve, assign). At this time we’ve decided to default to whatever is customary at an agency, or their preference (e.g. Jira, ServiceNow, email, etc). Agencies have discretion on how they’d like to manage this, and we’ll incorporate it into your agency-specific API documentation upon implementation. Please update the [API documentation](https://github.com/GSA-TTS/usai-onboarding/blob/main/(Template)%20USAi%20API%20guidance.docx) in the section highlighted in yellow and return it to partnerships@usai.gov. 
 
+## Analytics log access
+
+USAi delivers analytics logs (usage, performance, audit events) to your dedicated AWS resources. You'll receive IAM credentials, SQS queue URLs, and S3 bucket names from the USAI infrastructure team during onboarding.
+
+**[Log Access Quick Start](./log-access/)** - Get up and running in 10 minutes
+
+Additional guides:
+- [Complete Log Access Guide](./log-access/log-access-guide.md) - Full setup reference with Python consumer script
+- [Raw vs Redacted Logs](./log-access/raw-vs-redacted-logs.md) - Choosing between PII-redacted and full-content logs
+- [Security Best Practices](./log-access/security-best-practices.md) - Credential rotation, storage, incident response
+- [DLQ Investigation](./log-access/dlq-investigation.md) - Dead letter queue troubleshooting
+- [Architecture](./log-access/architecture.md) - How the Firehose → S3 → SNS → SQS pipeline works
+
 ## Additional things for you to (potentially) think about
 ### Privacy policy
 You may want to think about what data you are comfortable with users inputting into USAi based on agency use cases, strategy, risk tolerance, and policy (e.g. CUI/ PII). Please see the USAi [privacy policy](https://www.usai.gov/privacy/) and [rules of behavior](https://www.usai.gov/rules-of-behavior/) as reference. 
