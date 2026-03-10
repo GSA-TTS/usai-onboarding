@@ -1,4 +1,4 @@
-# USAi Analytics Log Access
+# USAi Interaction and Security Log Access
 
 **Get up and running in 10 minutes**
 
@@ -6,7 +6,7 @@
 
 ## What You're Getting
 
-As a USAi tenant, you receive dedicated AWS resources for analytics log access:
+As a USAi tenant, you receive dedicated AWS resources for interaction and security log access:
 
 **3 SQS Queues** (one per log type):
 - `interaction-raw` - Unredacted logs with PII
@@ -29,7 +29,7 @@ As a USAi tenant, you receive dedicated AWS resources for analytics log access:
 
 You'll need:
 - Your AWS credentials (Access Key ID and Secret Access Key)
-- Your tenant configuration values (provided by USAI infrastructure team)
+- Your tenant configuration values (provided by USAI)
 
 ```bash
 # AWS Configuration
@@ -45,7 +45,7 @@ DLQ_URL="YOUR_DLQ_URL"
 BUCKET_NAME="YOUR_S3_BUCKET_NAME"
 ```
 
-**Don't have these?** Contact your USAI infrastructure team.
+**Don't have these?** Contact [usai-security@gsa.gov](mailto:usai-security@gsa.gov). 
 
 ---
 
@@ -210,9 +210,9 @@ Dead Letter Queue should be empty. If you receive an alert, see the [DLQ Investi
 
 | Issue Type | Contact |
 |------------|---------|
-| **Access/Credentials/IAM** | USAI Infrastructure Team |
-| **Log Content/Format** | USAI Development Team |
-| **Security Incident** | USAI Security Team (Immediate) |
+| **Access/Credentials/IAM** | [usai-security@gsa.gov](mailto:usai-security@gsa.gov) |
+| **Log Content/Format** | [usai-security@gsa.gov](mailto:usai-security@gsa.gov)|
+| **Security Incident** | [usai-security@gsa.gov](mailto:usai-security@gsa.gov) |
 
 ---
 
