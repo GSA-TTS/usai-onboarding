@@ -60,9 +60,9 @@ You will have the ability to modify the USAi Chat’s system prompts to improve 
 ### API user management
 The workflow for API management is not included in USAi (request, approve, assign). At this time we’ve decided to default to whatever is customary at an agency, or their preference (e.g. Jira, ServiceNow, email, etc). Agencies have discretion on how they’d like to manage this, and we’ll incorporate it into your agency-specific API documentation upon implementation. Please update the [API documentation](https://github.com/GSA-TTS/usai-onboarding/blob/main/(Template)%20USAi%20API%20guidance.docx) in the section highlighted in yellow and return it to partnerships@usai.gov. 
 
-## Analytics log access
+## Security and Interaction log access
 
-USAi delivers analytics logs (usage, performance, audit events) to your dedicated AWS resources. You'll receive IAM credentials, SQS queue URLs, and S3 bucket names from the USAI infrastructure team during onboarding.
+USAi delivers security and interaction logs to your dedicated AWS resources. You'll receive IAM credentials, SQS queue URLs, and S3 bucket names from the USAi team during onboarding.
 
 **[Log Access Quick Start](./log-access/)** - Get up and running in 10 minutes
 
