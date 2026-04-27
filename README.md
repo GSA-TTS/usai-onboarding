@@ -43,10 +43,11 @@ USAi currently has the following models available (or coming soon!) with current
 Model Name | Vendor | Price per 1M input tokens  | Price per 1M output tokens
 --- | --- | --- | --- | 
 Gemini 2.5 Pro | Google | $1.25 | $10.00 
-Gemini 2 Flash | Google | $0.15 | $0.60
 Gemini 2.5 Flash | Google | $0.30 | $2.50
+GPT 5.2 | OpenAI | $1.75 | $14.00
+GPT 5.4 | OpenAI | $2.50 | $15.00
 Grok 4 | xAI | $5.50 | $27.50
-Haiku | Anthropic | $0.80 | $4.00
+Haiku 3.5 | Anthropic | $0.80 | $4.00
 Llama 3.2 11B | Meta | $0.16 | $0.16
 Llama 4 Maverick | Meta | $0.24 | $0.97
 Opus 4.5 | Anthropic | $5.00 | $25.00
