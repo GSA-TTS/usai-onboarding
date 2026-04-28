@@ -141,7 +141,7 @@ BUCKET_NAME = "usai-{tenant}-core-production-interaction-raw"
 
 REDACTED logs use 19 regex patterns to detect and mask PII including names, emails, SSNs, phone numbers, addresses, and more.
 
-**Full details:** See `PII_REDACTION_COMPLETE.md` for complete methodology, detected PII types, and examples.
+**Full details:** See [PII_REDACTION_COMPLETE.md](PII_REDACTION_COMPLETE.md) for complete methodology, detected PII types, and examples.
 
 ---
 
@@ -149,4 +149,4 @@ REDACTED logs use 19 regex patterns to detect and mask PII including names, emai
 
 **Last updated:** 2026-02-02
 **Platforms:** Works on Windows, macOS, and Linux
-**Related:** `PII_REDACTION_COMPLETE.md` - Complete PII detection methodology
+**Related:** [PII_REDACTION_COMPLETE.md](PII_REDACTION_COMPLETE.md) - Complete PII detection methodology
