@@ -269,6 +269,10 @@ Contact **partnerships@usai.gov** and we'll provide you with:
 
 SCIM provisioning lets you automatically manage user accounts in USAi from your identity provider. When someone joins your team, they get access. When they leave, access is revoked — automatically.
 
+For a more detailed explanation of the end-to-end SCIM flow, existing users,
+group provisioning, and the Microsoft Entra UI screens, see the
+[SCIM Provisioning Guide](./SCIM-PROVISIONING-GUIDE.md).
+
 ### Why Use SCIM?
 
 | Benefit | Description |
@@ -288,7 +292,11 @@ SCIM provisioning lets you automatically manage user accounts in USAi from your 
 | **User removal** | Automatic when removed from your IdP | Manual — must be removed from USAi separately |
 | **Group sync** | Yes — groups map to USAi roles | No — roles managed manually in USAi |
 
-> **Important:** SCIM and Just-in-Time provisioning cannot be used simultaneously. If you enable SCIM, users **must** be provisioned via SCIM before they can sign in.
+> **Important:** SCIM manages user records and groups; SSO still handles sign-in.
+> If your agency already has USAi users from OIDC or SAML sign-in, enabling SCIM
+> does not automatically delete, disable, or recreate those accounts. Entra only
+> changes users that are in provisioning scope or users it is configured to
+> deprovision.
 
 ### Setting Up SCIM
 
@@ -363,9 +371,13 @@ Click **Save** before proceeding.
 
 ##### Step 4: Configure User Attribute Mappings
 
-1. Under **Mappings**, click **Provision Azure Active Directory Users**
-2. Set **Enabled** to **Yes**
-3. Under **Attribute Mappings**, configure the following mappings. Remove any default mappings that are not in this list, and add/edit as needed:
+1. In the Microsoft Entra admin center, go to **Identity** → **Applications** → **Enterprise applications**
+2. Select the USAi provisioning enterprise application
+3. Open **Provisioning**
+4. Select **Edit provisioning** if the provisioning overview page is shown
+5. Under **Mappings**, click **Provision Azure Active Directory Users**
+6. Set **Enabled** to **Yes**
+7. Under **Attribute Mappings**, configure the following mappings. Remove any default mappings that are not in this list, and add/edit as needed:
 
    | Azure Active Directory Attribute | USAi (SCIM) Attribute | Mapping Type |
    |----------------------------------|-----------------------|-------------|
@@ -388,12 +400,14 @@ Click **Save** before proceeding.
 
    > 💡 This expression ensures that when a user is soft-deleted in Entra (disabled/removed), they are automatically deactivated in USAi.
 
-4. Under **Target Object Actions**, ensure these are checked:
+8. Under **Target Object Actions**, ensure these are checked:
    - ✅ Create
    - ✅ Update
    - ✅ Delete
 
-5. Click **Save**
+   **Update** must be enabled for Entra to send `active = false` soft-deprovisioning updates.
+
+9. Click **Save**
 
 ##### Step 5: Configure Group Provisioning (Optional but Recommended)
 
@@ -419,6 +433,11 @@ If you want to use group-based access control (recommended), you need to enable 
 ##### Step 6: Set the Provisioning Scope
 
 This controls which users and groups are synced to USAi.
+
+If a user already exists in USAi but is not assigned to the provisioning
+application, Entra normally does not create or update that user. If the user was
+previously managed by this provisioning application and then moves out of scope,
+the result depends on the deprovisioning behavior configured in Entra.
 
 1. Go to **Provisioning** → **Settings**
 2. Under **Scope**, select:

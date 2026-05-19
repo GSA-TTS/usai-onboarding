@@ -20,6 +20,9 @@ Once we have the tenant instance built, and the firewalls open to your IP addres
 
 **For detailed SSO configuration information, see the [Single Sign-On Integration Guide](./SSO-INTEGRATION-GUIDE.md).**
 
+For automated user and group provisioning, see the
+[SCIM Provisioning Guide](./SCIM-PROVISIONING-GUIDE.md).
+
 USAi uses Keycloak and supports:
 - **OIDC (OpenID Connect)** - Recommended for modern cloud IdPs
 - **SAML 2.0** - For enterprise SSO requirements

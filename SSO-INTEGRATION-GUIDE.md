@@ -293,6 +293,11 @@ During the co-work session, the USAi team will:
 
 SCIM (System for Cross-domain Identity Management) enables automated user lifecycle management between your IdP and USAi.
 
+For the customer-facing step-by-step SCIM setup, including the exact Microsoft
+Entra UI screens for user mappings, group mappings, provisioning scope, and
+`active = false` deprovisioning behavior, see the
+[SCIM Provisioning Guide](./SCIM-PROVISIONING-GUIDE.md).
+
 ### Benefits of SCIM Provisioning
 
 - **Automated User Creation**: New users are automatically provisioned when added to your IdP
