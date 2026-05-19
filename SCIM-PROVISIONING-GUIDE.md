@@ -4,6 +4,10 @@ This guide explains how SCIM provisioning works with USAi, what your agency
 controls in Microsoft Entra ID, and what happens to existing USAi users when
 SCIM is introduced.
 
+This guide supplements the full
+[USAi Single Sign-On Setup Guide](./SSO-INTEGRATION-GUIDE-CUSTOMER.md). Use
+that guide for the complete SSO and SCIM connector setup steps.
+
 SCIM is separate from single sign-on. Users still authenticate through your
 identity provider using OIDC or SAML. SCIM manages user records, attributes, and
 group membership in USAi.
@@ -55,6 +59,20 @@ What happens next depends on the Entra provisioning scope and mappings:
 
 Before turning provisioning on, decide whether SCIM should manage all existing
 USAi users or only a smaller set of users and groups.
+
+## SCIM And Just-In-Time User Creation
+
+SCIM and Just-in-Time user creation are different provisioning models.
+
+- With Just-in-Time user creation, USAi creates the user account during the
+  first successful SSO sign-in.
+- With SCIM provisioning, Entra creates or updates the user account before the
+  user signs in.
+
+If your agency chooses SCIM-only provisioning, users must be provisioned by SCIM
+before they can sign in. If a user can authenticate through SSO but has not been
+provisioned, they may not receive access until the SCIM sync creates or updates
+their USAi account and required group membership.
 
 ## User Provisioning
 

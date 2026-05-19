@@ -292,7 +292,11 @@ group provisioning, and the Microsoft Entra UI screens, see the
 | **User removal** | Automatic when removed from your IdP | Manual — must be removed from USAi separately |
 | **Group sync** | Yes — groups map to USAi roles | No — roles managed manually in USAi |
 
-> **Important:** SCIM manages user records and groups; SSO still handles sign-in.
+> **Important:** SCIM and Just-in-Time provisioning are separate provisioning
+> models. If your agency chooses SCIM-only provisioning, users must be
+> provisioned by SCIM before they can sign in.
+>
+> SCIM manages user records and groups; SSO still handles sign-in.
 > If your agency already has USAi users from OIDC or SAML sign-in, enabling SCIM
 > does not automatically delete, disable, or recreate those accounts. Entra only
 > changes users that are in provisioning scope or users it is configured to
