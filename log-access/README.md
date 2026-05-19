@@ -200,6 +200,7 @@ Dead Letter Queue should be empty. If you receive an alert, see the [DLQ Investi
 |-------|----------|
 | Complete setup reference | [Log Access Guide](./log-access-guide.md) |
 | Raw vs redacted logs | [Raw vs Redacted](./raw-vs-redacted-logs.md) |
+| PII redaction methodology | [PII Redaction Complete](./PII_REDACTION_COMPLETE.md) |
 | Credential management | [Security Best Practices](./security-best-practices.md) |
 | DLQ troubleshooting | [DLQ Investigation](./dlq-investigation.md) |
 | System architecture | [Architecture](./architecture.md) |
