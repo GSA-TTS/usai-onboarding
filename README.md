@@ -37,7 +37,7 @@ We don’t have strong preferences about how we establish this cadence and what 
 
 ### Firewall requests
 
-To ensure we open up the firewall to the right egress IP addresses for your agency, please complete the [USAi firewall request spreadsheet](https://github.com/GSA-TTS/usai-onboarding/raw/main/(Template)%20USAi-Partner%20Firewall%20Request%20Update%20V1.1%20.xlsx). Please return the spreadsheet to **usai-security@gsa.gov**.
+To ensure we open up the firewall to the right egress IP addresses for your agency, please complete the [USAi firewall request spreadsheet](https://github.com/GSA-TTS/usai-onboarding/raw/refs/heads/main/(Template)%20USAi-Partner%20Firewall%20Request%20Update%20V1.2.xlsx). Please return the spreadsheet to **usai-security@gsa.gov**.
 - **Note:** it usually takes the GSA team 7 days to make the firewall updates, so this item is a little time-sensitive.
 
 ### Models to deploy
