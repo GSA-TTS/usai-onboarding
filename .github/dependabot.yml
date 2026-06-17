@@ -1,0 +1,13 @@
+version: 2
+updates:
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    labels:
+      - dependencies
+      - github-actions
+    ignore:
+      - dependency-name: "GSA-TTS/usai-main"
+      - dependency-name: "GSA-TTS/usai-github-config"
