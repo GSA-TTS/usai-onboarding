@@ -51,7 +51,6 @@ GPT 5.2 | OpenAI | $1.75 | $14.00
 GPT 5.4 | OpenAI | $2.50 | $15.00
 GPT 5.5 | OpenAI | $5.00 | $30.00
 Grok 4 | xAI | $5.50 | $27.50
-Haiku 3.5 | Anthropic | $0.80 | $4.00
 Haiku 4.5 | Anthropic | $1.10 | $5.50
 Llama 4 Maverick | Meta | $0.24 | $0.97
 Opus 4.5 | Anthropic | $5.00 | $25.00
