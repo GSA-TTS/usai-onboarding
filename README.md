@@ -43,7 +43,7 @@ To ensure we open up the firewall to the right egress IP addresses for your agen
 ### Models to deploy
 USAi currently has the following models available (or coming soon!) with current costs shown. If you would like to disable any models, please let us know at partnerships@usai.gov.
 
-Model Name | Vendor | Price per 1M input tokens  | Price per 1M output tokens
+Model Name | Model Provider | Price per 1M input tokens  | Price per 1M output tokens
 --- | --- | --- | --- | 
 Gemini 2.5 Pro | Google | $1.25 | $10.00 
 Gemini 2.5 Flash | Google | $0.30 | $2.50
