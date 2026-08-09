@@ -1,0 +1,47 @@
+{
+  "event_id": "6e111d4e-928a-40fa-8bd9-8448637e9a6a",
+  "event_time": "2026-04-28T06:01:22.670432+00:00",
+  "source": "api",
+  "stream": false,
+  "kind": "chat_completion",
+  "user_id": "api-key-abcd",
+  "request_id": "a29e5dc8-a5ff-426e-b127-3b3e7716b09c",
+  "model": "gemini-2.5-pro",
+  "truncated": false,
+  "prompt_redacted": {
+    "messages": [
+      {
+        "role": "system",
+        "content": [
+          {
+            "type": "text",
+            "text": "You are a Section 508 compliance expert. Analyze the document text ... Return ONLY valid JSON with these fields: {...}"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Analyze this text for Section 508 applicability:\n\nAPPLICABLE PROVISIONS AND CLAUSES ... contact <PHONE> ..."
+          }
+        ]
+      }
+    ],
+    "temperature": 0.0
+  },
+  "response_redacted": {
+    "choices": [
+      {
+        "content": "```json\n{\n  \"is_508_applicable\": false,\n  \"confidence_score\": 3,\n  \"key_eit_indicators\": [\"software\", \"hardware\", \"...\"],\n  \"applicability_explanation\": \"...\",\n  \"accessibility_considerations\": \"None\",\n  \"is_physical_only\": false,\n  \"has_explicit_508_mention\": false,\n  \"is_cots_product\": true,\n  \"ict_complexity\": \"Simple\"\n}\n```",
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 9848,
+      "completion_tokens": 206,
+      "total_tokens": 11855
+    }
+  }
+}

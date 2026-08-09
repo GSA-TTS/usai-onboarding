@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "USAi Interaction Raw Firehose ChatCompletion Event",
+  "description": "Schema for a single line of the interaction-raw firehose JSONL export. One JSON object per line (newline-delimited JSON). Unlike the redacted firehose, prompt/response are raw (not PII-redacted), include tool definitions, tool calls, and a platform_model_id.",
+  "type": "object",
+  "required": [
+    "event_id",
+    "event_time",
+    "source",
+    "stream",
+    "kind",
+    "user_id",
+    "request_id",
+    "model",
+    "platform_model_id",
+    "prompt",
+    "response",
+    "truncated"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the event."
+    },
+    "event_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp, e.g. 2026-07-23T13:04:56.300501+00:00."
+    },
+    "source": {
+      "type": "string",
+      "description": "Origin of the request, e.g. 'api'."
+    },
+    "stream": {
+      "type": "boolean",
+      "description": "Whether the response was streamed."
+    },
+    "kind": {
+      "type": "string",
+      "description": "Event kind, e.g. 'chat_completion'."
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User / api-key alias, e.g. 'api-key-<uuid>'."
+    },
+    "request_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the request."
+    },
+    "model": {
+      "type": "string",
+      "description": "Model alias, e.g. 'claude-sonnet-4.6'."
+    },
+    "platform_model_id": {
+      "type": "string",
+      "description": "Underlying platform model id, e.g. 'inference-profile/us.anthropic.claude-sonnet-4-6'."
+    },
+    "truncated": {
+      "type": "boolean",
+      "description": "Whether the stored content was truncated."
+    },
+    "prompt": {
+      "type": "object",
+      "description": "Raw request payload.",
+      "required": ["messages"],
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["role", "content"],
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": ["system", "user", "assistant", "tool"]
+              },
+              "content": {
+                "description": "Either a string or a list of typed content parts.",
+                "oneOf": [
+                  { "type": "string" },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["type"],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "description": "Content part type, e.g. 'text'."
+                        },
+                        "text": { "type": "string" }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "tool_choice": {
+          "type": "string",
+          "description": "Tool selection strategy, e.g. 'auto', 'none', 'required'."
+        },
+        "tools": {
+          "type": "array",
+          "description": "Tool/function definitions supplied to the model.",
+          "items": {
+            "type": "object",
+            "required": ["type", "function"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Tool type, e.g. 'function'."
+              },
+              "function": {
+                "type": "object",
+                "required": ["name", "parameters"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "description": { "type": "string" },
+                  "parameters": {
+                    "type": "object",
+                    "description": "JSON Schema (draft) describing the tool's arguments. Structure varies per tool: typically { type, properties, required }."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "type": "object",
+      "description": "Raw response payload.",
+      "required": ["choices", "usage"],
+      "properties": {
+        "choices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string",
+                "description": "Model output text (may be empty when only tool_calls are returned)."
+              },
+              "finish_reason": {
+                "type": "string",
+                "description": "Reason generation stopped, e.g. 'stop', 'tool_calls'."
+              },
+              "tool_calls": {
+                "type": "array",
+                "description": "Tool/function calls emitted by the model.",
+                "items": {
+                  "type": "object",
+                  "required": ["id", "type", "function"],
+                  "properties": {
+                    "id": { "type": "string" },
+                    "index": { "type": "integer" },
+                    "type": {
+                      "type": "string",
+                      "description": "e.g. 'function'."
+                    },
+                    "function": {
+                      "type": "object",
+                      "required": ["name", "arguments"],
+                      "properties": {
+                        "name": { "type": "string" },
+                        "arguments": {
+                          "type": "string",
+                          "description": "JSON-encoded string of the call arguments."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "usage": {
+          "type": "object",
+          "properties": {
+            "prompt_tokens": { "type": "integer" },
+            "completion_tokens": { "type": "integer" },
+            "total_tokens": { "type": "integer" },
+            "latency_ms": { "type": "integer" }
+          }
+        }
+      }
+    }
+  }
+}

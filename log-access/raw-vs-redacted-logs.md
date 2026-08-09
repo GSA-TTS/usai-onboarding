@@ -11,23 +11,28 @@
 **Bucket naming:** `usai-{tenant}-core-production-interaction-redacted`
 
 **What you get:**
-- All performance metrics (latency, tokens, model)
-- PII masked with `<PERSON>` tags
-- User IDs, timestamps, session data
-- Original and redacted text lengths
+- Token metrics (`prompt_tokens`, `completion_tokens`, `total_tokens`) and `model`
+- PII masked with tokens like `<PERSON>`, `<PHONE>`, `<EMAIL>`
+- User IDs (`user_id`), `event_time`, `request_id`, `source`, `stream`, `truncated`
 
 **What you don't get:**
 - Actual conversation content
+- `latency_ms`, `platform_model_id`, or tool definitions/calls (raw only)
 
 **Example:**
 ```json
 {
+  "model": "gemini-2.5-pro",
   "prompt_redacted": {
-    "content": "Can <PERSON> help with <PERSON>?"
+    "messages": [
+      { "role": "user", "content": [ { "type": "text", "text": "Can you contact <PERSON> at <PHONE>?" } ] }
+    ],
+    "temperature": 0.0
   },
-  "tokens_prompt": 15,
-  "latency_ms": 2595,
-  "model": "google_vertex_manifold_pipeline.gemini-2.5-flash"
+  "response_redacted": {
+    "choices": [ { "content": "...", "finish_reason": "stop" } ],
+    "usage": { "prompt_tokens": 15, "completion_tokens": 42, "total_tokens": 57 }
+  }
 }
 ```
 
@@ -48,20 +53,29 @@
 
 **What you get:**
 - Everything from REDACTED bucket
-- Complete, unredacted conversation text
-- Full prompts and responses
+- Complete, unredacted conversation text (`prompt` / `response`)
+- `platform_model_id`, `latency_ms` (in `usage`)
+- Tool definitions (`prompt.tools`, `tool_choice`) and tool calls (`response.choices[].tool_calls`)
 
 **Example:**
 ```json
 {
+  "model": "claude-sonnet-4.6",
+  "platform_model_id": "inference-profile/us.anthropic.claude-sonnet-4-6",
   "prompt": {
-    "content": "Can you help me with a Power Query question?"
+    "messages": [
+      { "role": "user", "content": [ { "type": "text", "text": "Can you help me with a Power Query question?" } ] }
+    ],
+    "tool_choice": "auto",
+    "tools": [ { "type": "function", "function": { "name": "read_file", "parameters": { "type": "object" } } } ]
   },
   "response": {
-    "content": "Of course! I'd be happy to help..."
-  },
-  "tokens_prompt": 15,
-  "latency_ms": 2595
+    "choices": [
+      { "content": "Of course! I'd be happy to help...", "finish_reason": "tool_calls",
+        "tool_calls": [ { "id": "toolu_01ABC", "type": "function", "function": { "name": "read_file", "arguments": "{\"path\": \"src/main.py\"}" } } ] }
+    ],
+    "usage": { "prompt_tokens": 18452, "completion_tokens": 312, "total_tokens": 18764, "latency_ms": 4210 }
+  }
 }
 ```
 
@@ -98,11 +112,14 @@
 | Aspect | REDACTED | RAW |
 |--------|----------|-----|
 | **File size** | ~3-5 KB | ~10-20 KB |
-| **PII** | Removed | Present |
+| **PII** | Removed (`<PERSON>`, `<PHONE>`, ...) | Present |
 | **Content** | Masked | Full text |
-| **Metrics** | Complete | Complete |
-| **User IDs** | Yes | Yes |
-| **Timestamps** | Yes | Yes |
+| **Payload keys** | `prompt_redacted` / `response_redacted` | `prompt` / `response` |
+| **Token metrics** (`usage`) | Yes | Yes |
+| **`latency_ms`** | No | Yes (in `usage`) |
+| **`platform_model_id`** | No | Yes |
+| **Tools / tool_calls** | No | Yes |
+| **User IDs / Timestamps** | Yes | Yes |
 | **Security requirement** | Standard | Strict |
 
 ---

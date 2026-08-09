@@ -412,40 +412,56 @@ Each line is a JSON object representing one analytics event.
 **RAW logs contain:**
 ```json
 {
-  "event_id": "uuid",
-  "event_time": "2026-02-01T15:16:17Z",
-  "user_id": "uuid",
-  "chat_id": "uuid",
-  "prompt": {"content": "Full user question text"},
-  "response": {"content": "Full AI response text"},
-  "model": "google_vertex_manifold_pipeline.gemini-2.5-flash",
-  "latency_ms": 8044,
-  "tokens_prompt": 4,
-  "tokens_response": 1134
+  "event_id": "024f481f-8e11-42cc-bd23-e39e0596a6b2",
+  "event_time": "2026-07-23T13:04:51.300501+00:00",
+  "source": "api",
+  "stream": true,
+  "kind": "chat_completion",
+  "user_id": "api-key-abcdefghijk",
+  "request_id": "111e111c-3f65-47d8-abf0-c2ddf6c2f994",
+  "model": "claude-sonnet-4.6",
+  "platform_model_id": "inference-profile/us.anthropic.claude-sonnet-4-6",
+  "truncated": false,
+  "prompt": {
+    "messages": [
+      { "role": "user", "content": [ { "type": "text", "text": "Full user question text" } ] }
+    ],
+    "tool_choice": "auto",
+    "tools": [ { "type": "function", "function": { "name": "read_file", "parameters": { "type": "object" } } } ]
+  },
+  "response": {
+    "choices": [ { "content": "Full AI response text", "finish_reason": "stop" } ],
+    "usage": { "prompt_tokens": 18452, "completion_tokens": 312, "total_tokens": 18764, "latency_ms": 4210 }
+  }
 }
 ```
 
 **REDACTED logs contain:**
 ```json
 {
-  "event_id": "uuid",
-  "event_time": "2026-02-01T15:16:17Z",
-  "user_id": "uuid",
-  "chat_id": "uuid",
-  "prompt_redacted": {"content": "Let'<PERSON>. <PERSON>."},
-  "prompt_original_length": 157,
-  "prompt_redacted_length": 33,
-  "response_redacted": {"content": "Understood! <PERSON>..."},
-  "response_original_length": 686,
-  "response_redacted_length": 267,
-  "model": "google_vertex_manifold_pipeline.gemini-2.5-flash",
-  "latency_ms": 2595,
-  "tokens_prompt": 39,
-  "tokens_response": 171
+  "event_id": "6e111d4e-928a-40fa-8bd9-8448637e9a6a",
+  "event_time": "2026-04-28T06:01:22.670432+00:00",
+  "source": "api",
+  "stream": false,
+  "kind": "chat_completion",
+  "user_id": "api-key-abcd",
+  "request_id": "a29e5dc8-a5ff-426e-b127-3b3e7716b09c",
+  "model": "gemini-2.5-pro",
+  "truncated": false,
+  "prompt_redacted": {
+    "messages": [
+      { "role": "user", "content": [ { "type": "text", "text": "... contact <PHONE> ..." } ] }
+    ],
+    "temperature": 0.0
+  },
+  "response_redacted": {
+    "choices": [ { "content": "...", "finish_reason": "stop" } ],
+    "usage": { "prompt_tokens": 9848, "completion_tokens": 206, "total_tokens": 11855 }
+  }
 }
 ```
 
-**See [raw-vs-redacted-logs.md](raw-vs-redacted-logs.md) for detailed comparison.**
+**See [raw-vs-redacted-logs.md](raw-vs-redacted-logs.md) for detailed comparison, and [examples/](examples/) for the full JSON Schemas.**
 
 ### Processing Log Files
 

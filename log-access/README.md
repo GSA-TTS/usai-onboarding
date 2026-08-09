@@ -128,19 +128,41 @@ head -5 log.json | jq .
 
 **Format:** NDJSON (one JSON object per line)
 
-**Example Event:**
+Each line is a `chat_completion` event. There are two shapes depending on which
+bucket you read from: **redacted** (`prompt_redacted` / `response_redacted`) and
+**raw** (`prompt` / `response`, plus `platform_model_id` and tool data). See the
+canonical schemas and examples in [`examples/`](./examples/).
+
+**Example Event (redacted):**
 ```json
 {
-  "event_id": "abc-123",
-  "event_time": "2026-02-17T10:30:00Z",
+  "event_id": "6e111d4e-928a-40fa-8bd9-8448637e9a6a",
+  "event_time": "2026-04-28T06:01:22.670432+00:00",
+  "source": "api",
+  "stream": false,
   "kind": "chat_completion",
-  "user_id": "user-456",
-  "model": "claude-sonnet-4",
-  "tokens_prompt": 21,
-  "tokens_response": 150,
-  "latency_ms": 250
+  "user_id": "api-key-abcd",
+  "request_id": "a29e5dc8-a5ff-426e-b127-3b3e7716b09c",
+  "model": "gemini-2.5-pro",
+  "truncated": false,
+  "prompt_redacted": {
+    "messages": [
+      { "role": "user", "content": [ { "type": "text", "text": "... contact <PHONE> ..." } ] }
+    ],
+    "temperature": 0.0
+  },
+  "response_redacted": {
+    "choices": [ { "content": "...", "finish_reason": "stop" } ],
+    "usage": { "prompt_tokens": 9848, "completion_tokens": 206, "total_tokens": 11855 }
+  }
 }
 ```
+
+**Field notes:**
+- Token counts live under `usage`: `prompt_tokens`, `completion_tokens`, `total_tokens`.
+- `latency_ms` is present in `response.usage` on **raw** events only.
+- Message text is a list of typed parts (`content[].text`), not a plain string.
+- **Raw** events add `platform_model_id`, `prompt.tools` / `tool_choice`, and `response.choices[].tool_calls`.
 
 **Common Operations:**
 ```bash
@@ -150,11 +172,17 @@ head -5 log.json | jq .
 # Count events
 wc -l log.json
 
-# Extract specific fields
-cat log.json | jq '{event_id, model, tokens_prompt, tokens_response}'
+# Extract key fields (redacted)
+cat log.json | jq '{event_id, model, usage: .response_redacted.usage}'
+
+# Extract key fields (raw)
+cat log.json | jq '{event_id, model, platform_model_id, usage: .response.usage}'
 
 # Count by model
 cat log.json | jq -r '.model' | sort | uniq -c
+
+# Sum total tokens (redacted)
+cat log.json | jq '.response_redacted.usage.total_tokens' | paste -sd+ - | bc
 ```
 
 ---
