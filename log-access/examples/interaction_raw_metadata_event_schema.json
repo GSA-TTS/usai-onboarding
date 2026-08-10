@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/GSA-TTS/usai-onboarding/log-access/examples/interaction_raw_metadata_event_schema.json",
+  "title": "USAi Interaction Raw Metadata Event (split format, post-cutover)",
+  "description": "Schema for a single line of the interaction-raw firehose JSONL export AFTER the context-history split. One JSON object per line (newline-delimited JSON). This event carries only request metadata and token usage; the prompt/response content lives in a separate S3 object identified by context_history_s3_key and described by interaction_context_history_schema.json. For the pre-cutover single-object format see interaction_raw_event_schema.json.",
+  "type": "object",
+  "required": [
+    "event_id",
+    "event_time",
+    "source",
+    "stream",
+    "kind",
+    "user_id",
+    "request_id",
+    "model",
+    "platform_model_id",
+    "status",
+    "context_history_s3_key"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the event. Also used as the final path segment of context_history_s3_key."
+    },
+    "event_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp, e.g. 2026-07-23T17:46:33.705182+00:00."
+    },
+    "source": {
+      "type": "string",
+      "description": "Origin of the request. 'chat' for USAi Chat traffic, 'api' for direct API traffic.",
+      "examples": ["chat", "api"]
+    },
+    "stream": {
+      "type": "boolean",
+      "description": "Whether the response was streamed."
+    },
+    "kind": {
+      "type": "string",
+      "description": "Event kind, e.g. 'chat_completion'."
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User identifier. A user UUID for source='chat', or an api-key alias such as 'api-key-<uuid>' / 'local-api' for source='api'."
+    },
+    "conversation_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Conversation the request belongs to. Present for source='chat'; absent for stateless source='api' requests. Used as a path segment of context_history_s3_key for chat traffic."
+    },
+    "request_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the request."
+    },
+    "model": {
+      "type": "string",
+      "description": "Model alias, e.g. 'gpt-5.5', 'llama_4_maverick', 'claude-sonnet-4.6'."
+    },
+    "platform_model_id": {
+      "type": "string",
+      "description": "Underlying platform model id, e.g. 'gpt-5.5-DefaultV2' or 'inference-profile/us.meta.llama4-maverick-17b-instruct-v1:0'."
+    },
+    "status": {
+      "type": "string",
+      "description": "Outcome of the request, e.g. 'success'. Treat as an open string set; do not assume a closed enum."
+    },
+    "context_history_s3_key": {
+      "type": "string",
+      "description": "S3 object key of the context-history document holding the full prompt/response for this event. Chat traffic: 'chat/{conversation_id}/{event_id}.json'. API traffic: 'api/{user_id}/{event_id}.json'.",
+      "examples": [
+        "chat/e2065dd3-75ae-405c-aa81-2faef48853bd/fd0be7bb-48d2-4376-bd4d-774a965a779d.json",
+        "api/local-api/631241ad-d6c3-4625-94a2-880196702bdd.json"
+      ]
+    },
+    "usage": {
+      "type": "object",
+      "description": "Token usage for the request. In the split format usage is emitted on the metadata event for chat traffic. For some API traffic usage is instead present inside the context-history document at response.usage, so consumers should read usage from the metadata event and fall back to the context document. See 'Token usage location' in raw-vs-redacted-logs.md.",
+      "properties": {
+        "prompt_tokens": { "type": "integer" },
+        "completion_tokens": { "type": "integer" },
+        "total_tokens": { "type": "integer" },
+        "latency_ms": {
+          "type": ["integer", "null"],
+          "description": "End-to-end latency in milliseconds. Emitted as null when not measured."
+        }
+      }
+    }
+  }
+}

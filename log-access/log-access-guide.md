@@ -397,6 +397,14 @@ python consume_logs.py
 
 Log files are in **NDJSON** (Newline Delimited JSON) format, optionally gzip-compressed.
 
+> **⚠️ Upcoming change — context-history split.** The RAW stream is changing so that
+> conversation content is written to a **separate S3 object** rather than embedded in
+> the streamed event. Firehose delivery, bucket, and dated prefix stay the same, but
+> `prompt`, `response`, and `truncated` leave the event; `status`,
+> `context_history_s3_key`, and a top-level `usage` are added. See
+> [Context-history split](#context-history-split-upcoming) below and the
+> [migration checklist](raw-vs-redacted-logs.md#migration-checklist-for-consumers).
+
 ### File Naming Pattern
 
 ```
@@ -404,6 +412,14 @@ Log files are in **NDJSON** (Newline Delimited JSON) format, optionally gzip-com
 ```
 
 Example: `2026/01/28/10-30-00-abc123def456.json`
+
+After the context-history split there is a second, separately keyed artifact per
+request holding the conversation content:
+
+```
+chat/{conversation_id}/{event_id}.json      # source = "chat"
+api/{user_id}/{event_id}.json               # source = "api"
+```
 
 ### File Contents
 
@@ -462,6 +478,77 @@ Each line is a JSON object representing one analytics event.
 ```
 
 **See [raw-vs-redacted-logs.md](raw-vs-redacted-logs.md) for detailed comparison, and [examples/](examples/) for the full JSON Schemas.**
+
+### Context-history split (upcoming)
+
+**Status:** announced by the platform team; cutover date not yet published. Applies
+to the RAW stream. Whether the REDACTED stream also splits is not yet confirmed.
+
+After the split, each request produces **two** artifacts.
+
+**1. Metadata event** — one NDJSON line in the same dated prefix as today
+(schema: [`interaction_raw_metadata_event_schema.json`](examples/interaction_raw_metadata_event_schema.json)):
+
+```json
+{
+  "event_id": "fd0be7bb-48d2-4376-bd4d-774a965a779d",
+  "event_time": "2026-07-23T17:46:33.705182+00:00",
+  "source": "chat",
+  "stream": true,
+  "kind": "chat_completion",
+  "user_id": "9506e4f2-2b17-41e6-8ecc-b9c730b394c2",
+  "conversation_id": "e2065dd3-75ae-405c-aa81-2faef48853bd",
+  "request_id": "20b7b796-dafa-415f-a5ae-a753678cef2c",
+  "model": "gpt-5.5",
+  "platform_model_id": "gpt-5.5-DefaultV2",
+  "usage": { "prompt_tokens": 2237, "completion_tokens": 38, "total_tokens": 2275, "latency_ms": null },
+  "status": "success",
+  "context_history_s3_key": "chat/e2065dd3-75ae-405c-aa81-2faef48853bd/fd0be7bb-48d2-4376-bd4d-774a965a779d.json"
+}
+```
+
+**2. Context-history document** — a single JSON document (not NDJSON) at
+`context_history_s3_key`, holding `prompt` and `response`
+(schema: [`interaction_context_history_schema.json`](examples/interaction_context_history_schema.json)).
+
+**Fetching content for an event:**
+
+```bash
+KEY=$(head -1 log.json | jq -r '.context_history_s3_key')
+aws s3 cp s3://${BUCKET_NAME}/${KEY} ./context.json --region ${AWS_REGION}
+jq '.prompt.messages[-1], .response.choices[0].content' context.json
+```
+
+```python
+import json
+import boto3
+
+s3 = boto3.client("s3")
+
+def load_context(bucket, event):
+    """Fetch the conversation content for a split-format metadata event."""
+    key = event.get("context_history_s3_key")
+    if not key:
+        # Pre-cutover event: content is inline.
+        return {"prompt": event.get("prompt"), "response": event.get("response")}
+    body = s3.get_object(Bucket=bucket, Key=key)["Body"].read()
+    return json.loads(body)
+
+def token_usage(bucket, event):
+    """usage lives on the metadata event; fall back to the context document."""
+    usage = event.get("usage") or {}
+    if usage.get("total_tokens") is None:
+        usage = (load_context(bucket, event).get("response") or {}).get("usage", {})
+    return usage
+```
+
+The helper above handles both formats, so you can deploy it before cutover.
+
+**IAM note:** if your read policy was scoped to the dated
+`{YEAR}/{MONTH}/{DAY}/*` prefix, it will not cover `chat/*` and `api/*`. Request an
+updated policy from [usai-security@gsa.gov](mailto:usai-security@gsa.gov) before
+cutover. Whether the context-history documents land in the same bucket is one of
+the [open questions](raw-vs-redacted-logs.md#open-questions).
 
 ### Processing Log Files
 

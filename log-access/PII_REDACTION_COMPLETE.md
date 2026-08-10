@@ -106,6 +106,26 @@ Write to REDACTED bucket with renamed fields (prompt_redacted / response_redacte
 
 See [examples/interaction_redacted_event_schema.json](examples/interaction_redacted_event_schema.json) for the authoritative redacted schema.
 
+### 3. Impact of the context-history split (upcoming)
+
+The RAW stream is moving to a [context-history split](raw-vs-redacted-logs.md#upcoming-change-context-history-split),
+in which `prompt` and `response` are written to a separate S3 object instead of
+being embedded in the streamed event. That directly affects the paths listed above:
+`prompt.messages[].content[].text` and `response.choices[].content` will no longer
+exist on the streamed event, so a redactor reading only the Kinesis event has
+nothing to redact.
+
+**Not yet confirmed by the platform team** — do not assume either answer:
+
+- Whether the REDACTED pipeline also splits, or continues to emit inline
+  `prompt_redacted` / `response_redacted` content.
+- Whether the context-history document is PII-redacted for tenants on the redacted
+  path, or exists only on the raw path.
+- Whether `truncated` is retired from the redacted event as well as the raw event.
+
+This document describes the redaction behavior in production today. It will be
+updated once the split's redaction design is published.
+
 ---
 
 ## Redaction Examples

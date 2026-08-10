@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "USAI interaction - redacted s3 logs Schema",
-  "description": "Schema for a single line of the USAI firehose JSONL export. The file contains one JSON object per line (newline-delimited JSON), each representing a redacted chat_completion event.",
+  "title": "USAI interaction - redacted s3 logs Schema (pre-cutover, inline content)",
+  "description": "Schema for a single line of the USAI redacted firehose JSONL export. The file contains one JSON object per line (newline-delimited JSON), each representing a redacted chat_completion event with inline redacted content. NOTE: the raw stream is moving to a context-history split (see interaction_raw_metadata_event_schema.json). Whether the redacted stream also splits is not yet confirmed; see 'Upcoming change' in raw-vs-redacted-logs.md.",
   "type": "object",
   "required": [
     "event_id",
@@ -29,7 +29,7 @@
     },
     "source": {
       "type": "string",
-      "description": "Origin of the request, e.g. 'api'."
+      "description": "Origin of the request. 'chat' for USAi Chat traffic, 'api' for direct API traffic."
     },
     "stream": {
       "type": "boolean",
@@ -41,7 +41,12 @@
     },
     "user_id": {
       "type": "string",
-      "description": "Redacted user/api-key alias, e.g. 'api-key-<uuid>'."
+      "description": "User identifier. A user UUID for source='chat', or an api-key alias such as 'api-key-<uuid>' / 'local-api' for source='api'."
+    },
+    "conversation_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Conversation the request belongs to. Present for source='chat'; absent for stateless source='api' requests."
     },
     "request_id": {
       "type": "string",
