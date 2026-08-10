@@ -133,6 +133,14 @@ bucket you read from: **redacted** (`prompt_redacted` / `response_redacted`) and
 **raw** (`prompt` / `response`, plus `platform_model_id` and tool data). See the
 canonical schemas and examples in [`examples/`](./examples/).
 
+> **⚠️ Upcoming change:** the RAW stream is moving to a **context-history split** —
+> streamed events will carry metadata plus a `context_history_s3_key` pointer, and
+> conversation content will live in a separate S3 object. `prompt`, `response`, and
+> `truncated` disappear from the streamed event, `usage` moves to the top level, and
+> `usage.latency_ms` may be `null`. If you are building a consumer now, read
+> [Upcoming change: context-history split](./raw-vs-redacted-logs.md#upcoming-change-context-history-split)
+> and follow the migration checklist there.
+
 **Example Event (redacted):**
 ```json
 {
@@ -163,6 +171,13 @@ canonical schemas and examples in [`examples/`](./examples/).
 - `latency_ms` is present in `response.usage` on **raw** events only.
 - Message text is a list of typed parts (`content[].text`), not a plain string.
 - **Raw** events add `platform_model_id`, `prompt.tools` / `tool_choice`, and `response.choices[].tool_calls`.
+- `source` is `"api"` for direct API traffic and `"chat"` for USAi Chat traffic.
+  Chat events carry a `conversation_id` and a UUID `user_id`; API events use an
+  api-key alias such as `api-key-<uuid>` or `local-api`.
+- **After the context-history split** (raw stream): `usage` moves to the top level,
+  `usage.latency_ms` may be `null`, `truncated` is removed, and `status` plus
+  `context_history_s3_key` are added. Content is fetched separately from
+  `context_history_s3_key`.
 
 **Common Operations:**
 ```bash
@@ -178,11 +193,21 @@ cat log.json | jq '{event_id, model, usage: .response_redacted.usage}'
 # Extract key fields (raw)
 cat log.json | jq '{event_id, model, platform_model_id, usage: .response.usage}'
 
+# Extract key fields (raw, after the context-history split)
+cat log.json | jq '{event_id, model, platform_model_id, status, usage, context_history_s3_key}'
+
 # Count by model
 cat log.json | jq -r '.model' | sort | uniq -c
 
 # Sum total tokens (redacted)
 cat log.json | jq '.response_redacted.usage.total_tokens' | paste -sd+ - | bc
+
+# Sum total tokens (raw, after the context-history split)
+cat log.json | jq '.usage.total_tokens' | paste -sd+ - | bc
+
+# Fetch the conversation content for one event (after the split)
+KEY=$(head -1 log.json | jq -r '.context_history_s3_key')
+aws s3 cp s3://${BUCKET_NAME}/${KEY} - --region ${AWS_REGION} | jq .
 ```
 
 ---

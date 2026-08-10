@@ -80,9 +80,12 @@ USAi delivers security and interaction logs to your dedicated AWS resources. You
 Additional guides:
 - [Complete Log Access Guide](./log-access/log-access-guide.md) - Full setup reference with Python consumer script
 - [Raw vs Redacted Logs](./log-access/raw-vs-redacted-logs.md) - Choosing between PII-redacted and full-content logs
+- [Interaction Log Schemas](./log-access/examples/) - Canonical JSON Schemas and examples for both the current and upcoming split log formats
 - [Security Best Practices](./log-access/security-best-practices.md) - Credential rotation, storage, incident response
 - [DLQ Investigation](./log-access/dlq-investigation.md) - Dead letter queue troubleshooting
 - [Architecture](./log-access/architecture.md) - How the Firehose → S3 → SNS → SQS pipeline works
+
+> **Log consumers:** the raw interaction log format is changing — conversation content moves out of the streamed event into a separate S3 object referenced by `context_history_s3_key`. See [Upcoming change: context-history split](./log-access/raw-vs-redacted-logs.md#upcoming-change-context-history-split) for the new shapes and the consumer migration checklist.
 
 ## Additional things for you to (potentially) think about
 ### Privacy policy
