@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/GSA-TTS/usai-onboarding/log-access/examples/interaction_context_history_schema.json",
+  "title": "USAi Interaction Context History Document (split format, post-cutover)",
+  "description": "Schema for the standalone S3 object that holds the full prompt/response content for one interaction event. This is a single JSON document (NOT newline-delimited). Its key is published on the corresponding firehose metadata event as context_history_s3_key. See interaction_raw_metadata_event_schema.json.",
+  "type": "object",
+  "required": ["user_id", "prompt", "response"],
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User identifier, matching user_id on the metadata event."
+    },
+    "conversation_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Conversation the request belongs to. Present for chat traffic; absent for stateless API requests."
+    },
+    "prompt": {
+      "type": "object",
+      "description": "Full, unredacted request payload.",
+      "required": ["messages"],
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["role"],
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": ["system", "user", "assistant", "tool"]
+              },
+              "content": {
+                "description": "Either a string (tool results) or a list of typed content parts. May be an empty array on assistant messages that only carry tool_calls.",
+                "oneOf": [
+                  { "type": "string" },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["type"],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "description": "Content part type, e.g. 'text'."
+                        },
+                        "text": { "type": "string" }
+                      }
+                    }
+                  }
+                ]
+              },
+              "tool_call_id": {
+                "type": "string",
+                "description": "Present on role='tool' messages; correlates with an earlier tool_calls[].id."
+              },
+              "tool_calls": {
+                "type": "array",
+                "description": "Present on role='assistant' messages that invoke tools.",
+                "items": {
+                  "type": "object",
+                  "required": ["id", "type", "function"],
+                  "properties": {
+                    "index": { "type": "integer" },
+                    "id": { "type": "string" },
+                    "type": { "type": "string" },
+                    "function": {
+                      "type": "object",
+                      "required": ["name", "arguments"],
+                      "properties": {
+                        "name": { "type": "string" },
+                        "arguments": {
+                          "type": "string",
+                          "description": "JSON-encoded string of the tool arguments."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tools": {
+          "type": "array",
+          "description": "Tool/function definitions supplied to the model.",
+          "items": {
+            "type": "object",
+            "required": ["type", "function"],
+            "properties": {
+              "type": { "type": "string" },
+              "function": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "description": { "type": "string" },
+                  "parameters": {
+                    "type": "object",
+                    "description": "JSON Schema describing the tool's arguments."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tool_choice": {
+          "type": "string",
+          "description": "Tool selection strategy, e.g. 'auto', 'none', 'required'."
+        },
+        "temperature": {
+          "type": "number",
+          "description": "Sampling temperature for the request, when supplied."
+        }
+      }
+    },
+    "response": {
+      "type": "object",
+      "description": "Full, unredacted response payload.",
+      "required": ["choices"],
+      "properties": {
+        "choices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "content": { "type": "string" },
+              "finish_reason": { "type": "string" },
+              "tool_calls": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "index": { "type": "integer" },
+                    "id": { "type": "string" },
+                    "type": { "type": "string" },
+                    "function": {
+                      "type": "object",
+                      "properties": {
+                        "name": { "type": "string" },
+                        "arguments": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "usage": {
+          "type": "object",
+          "description": "Token usage. Optional here: for chat traffic usage is carried on the metadata event instead. Read usage from the metadata event first and fall back to this field.",
+          "properties": {
+            "prompt_tokens": { "type": "integer" },
+            "completion_tokens": { "type": "integer" },
+            "total_tokens": { "type": "integer" },
+            "latency_ms": { "type": ["integer", "null"] }
+          }
+        }
+      }
+    }
+  }
+}

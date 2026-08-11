@@ -1,0 +1,13 @@
+{
+  "event_id": "631241ad-d6c3-4625-94a2-880196702bdd",
+  "event_time": "2026-07-23T17:52:47.953503+00:00",
+  "source": "api",
+  "stream": false,
+  "kind": "chat_completion",
+  "user_id": "local-api",
+  "request_id": "4323c79e-1b51-4c24-9fb8-f7ac6039b84f",
+  "model": "llama_4_maverick",
+  "platform_model_id": "inference-profile/us.meta.llama4-maverick-17b-instruct-v1:0",
+  "status": "success",
+  "context_history_s3_key": "api/local-api/631241ad-d6c3-4625-94a2-880196702bdd.json"
+}

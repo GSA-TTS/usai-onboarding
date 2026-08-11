@@ -1,0 +1,20 @@
+{
+  "event_id": "fd0be7bb-48d2-4376-bd4d-774a965a779d",
+  "event_time": "2026-07-23T17:46:33.705182+00:00",
+  "source": "chat",
+  "stream": true,
+  "kind": "chat_completion",
+  "user_id": "9506e4f2-2b17-41e6-8ecc-b9c730b394c2",
+  "conversation_id": "e2065dd3-75ae-405c-aa81-2faef48853bd",
+  "request_id": "20b7b796-dafa-415f-a5ae-a753678cef2c",
+  "model": "gpt-5.5",
+  "platform_model_id": "gpt-5.5-DefaultV2",
+  "usage": {
+    "prompt_tokens": 2237,
+    "completion_tokens": 38,
+    "total_tokens": 2275,
+    "latency_ms": null
+  },
+  "status": "success",
+  "context_history_s3_key": "chat/e2065dd3-75ae-405c-aa81-2faef48853bd/fd0be7bb-48d2-4376-bd4d-774a965a779d.json"
+}

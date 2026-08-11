@@ -1,0 +1,78 @@
+{
+  "event_id": "024f481f-8e11-42cc-bd23-e39e0596a6b2",
+  "event_time": "2026-07-23T13:04:51.300501+00:00",
+  "source": "api",
+  "stream": true,
+  "kind": "chat_completion",
+  "user_id": "api-key-abcdefghijk",
+  "request_id": "111e111c-3f65-47d8-abf0-c2ddf6c2f994",
+  "model": "claude-sonnet-4.6",
+  "platform_model_id": "inference-profile/us.anthropic.claude-sonnet-4-6",
+  "truncated": false,
+  "prompt": {
+    "messages": [
+      {
+        "role": "system",
+        "content": [
+          {
+            "type": "text",
+            "text": "You are Zoo, a highly skilled software engineer ... MARKDOWN RULES ... TOOL USE ..."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "<task>Fix the bug in ...</task> ..."
+          }
+        ]
+      }
+    ],
+    "tool_choice": "auto",
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "read_file",
+          "description": "Read the contents of a file ...",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": { "type": "string", "description": "..." },
+              "offset": { "type": "string", "description": "..." },
+              "limit": { "type": "string", "description": "..." }
+            },
+            "required": ["path"]
+          }
+        }
+      }
+    ]
+  },
+  "response": {
+    "choices": [
+      {
+        "content": "I'll start by reading the file ...",
+        "finish_reason": "tool_calls",
+        "tool_calls": [
+          {
+            "id": "toolu_01ABC...",
+            "index": 0,
+            "type": "function",
+            "function": {
+              "name": "read_file",
+              "arguments": "{\"path\": \"src/main.py\", \"limit\": \"...\"}"
+            }
+          }
+        ]
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 18452,
+      "completion_tokens": 312,
+      "total_tokens": 18764,
+      "latency_ms": 4210
+    }
+  }
+}

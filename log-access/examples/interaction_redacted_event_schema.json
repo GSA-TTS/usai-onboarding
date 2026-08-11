@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "USAI interaction - redacted s3 logs Schema (pre-cutover, inline content)",
+  "description": "Schema for a single line of the USAI redacted firehose JSONL export. The file contains one JSON object per line (newline-delimited JSON), each representing a redacted chat_completion event with inline redacted content. NOTE: the raw stream is moving to a context-history split (see interaction_raw_metadata_event_schema.json). Whether the redacted stream also splits is not yet confirmed; see 'Upcoming change' in raw-vs-redacted-logs.md.",
+  "type": "object",
+  "required": [
+    "event_id",
+    "event_time",
+    "source",
+    "stream",
+    "kind",
+    "user_id",
+    "request_id",
+    "model",
+    "truncated",
+    "prompt_redacted",
+    "response_redacted"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the event."
+    },
+    "event_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of the event, e.g. 2026-04-28T06:01:22.670432+00:00."
+    },
+    "source": {
+      "type": "string",
+      "description": "Origin of the request. 'chat' for USAi Chat traffic, 'api' for direct API traffic."
+    },
+    "stream": {
+      "type": "boolean",
+      "description": "Whether the response was streamed."
+    },
+    "kind": {
+      "type": "string",
+      "description": "Event kind, e.g. 'chat_completion'."
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User identifier. A user UUID for source='chat', or an api-key alias such as 'api-key-<uuid>' / 'local-api' for source='api'."
+    },
+    "conversation_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Conversation the request belongs to. Present for source='chat'; absent for stateless source='api' requests."
+    },
+    "request_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the request."
+    },
+    "model": {
+      "type": "string",
+      "description": "Model used, e.g. 'gemini-2.5-pro', 'gemini-2.5-flash'."
+    },
+    "truncated": {
+      "type": "boolean",
+      "description": "Whether the stored content was truncated."
+    },
+    "prompt_redacted": {
+      "type": "object",
+      "description": "PII-redacted request payload.",
+      "required": ["messages"],
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["role", "content"],
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": ["system", "user", "assistant"]
+              },
+              "content": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["type"],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "Content part type, e.g. 'text'."
+                    },
+                    "text": {
+                      "type": "string",
+                      "description": "Text content. May contain redaction tokens such as <PHONE>."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "temperature": {
+          "type": "number",
+          "description": "Sampling temperature for the request."
+        }
+      }
+    },
+    "response_redacted": {
+      "type": "object",
+      "description": "PII-redacted response payload.",
+      "required": ["choices", "usage"],
+      "properties": {
+        "choices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string",
+                "description": "Model output text, often a fenced ```json block."
+              },
+              "finish_reason": {
+                "type": "string",
+                "description": "Reason generation stopped, e.g. 'stop'."
+              }
+            }
+          }
+        },
+        "usage": {
+          "type": "object",
+          "properties": {
+            "prompt_tokens": { "type": "integer" },
+            "completion_tokens": { "type": "integer" },
+            "total_tokens": { "type": "integer" }
+          }
+        }
+      }
+    }
+  }
+}
