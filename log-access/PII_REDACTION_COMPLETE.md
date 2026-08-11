@@ -75,47 +75,56 @@ RAW S3 Bucket → Batch Processor → REDACTED S3 Bucket
     ↓
 Read NDJSON files
     ↓
-Extract text from "prompt" and "response" fields
+Extract text from "prompt.messages[].content[].text" and "response.choices[].content"
     ↓
 Apply regex patterns to detect PII
     ↓
-Replace PII with placeholder tags (e.g., <PERSON>)
+Replace PII with placeholder tags (e.g., <PERSON>, <PHONE>)
     ↓
-Track original and redacted lengths
-    ↓
-Write to REDACTED bucket with renamed fields
+Write to REDACTED bucket with renamed fields (prompt_redacted / response_redacted)
 ```
 
 ### 2. Fields Processed
 
 **Text fields redacted (default):**
-- `prompt.content` → renamed to `prompt_redacted.content`
-- `response.content` → renamed to `response_redacted.content`
+- `prompt.messages[].content[].text` → renamed to `prompt_redacted.messages[].content[].text`
+- `response.choices[].content` → renamed to `response_redacted.choices[].content`
 
 **Fields NOT redacted (preserved):**
-- `user_id` (UUID) - preserved for analytics
-- `chat_id` (UUID) - preserved for session tracking
+- `user_id` (api-key alias) - preserved for analytics
+- `request_id` (UUID) - preserved for request tracking
 - `event_id` - preserved for correlation
 - `event_time` - timestamp preserved
+- `source`, `stream`, `kind`, `truncated` - metadata preserved
 - `model` - model name preserved
-- `latency_ms` - performance metric preserved
-- `tokens_prompt` - token count preserved
-- `tokens_response` - token count preserved
+- `response_redacted.usage` - token counts (`prompt_tokens`, `completion_tokens`, `total_tokens`) preserved
 
-### 3. Length Tracking
+**Fields dropped in redacted logs:**
+- `platform_model_id` - raw only
+- `prompt.tools` / `tool_choice` and `response.choices[].tool_calls` - raw only
+- `usage.latency_ms` - raw only
 
-The system adds metadata fields:
+See [examples/interaction_redacted_event_schema.json](examples/interaction_redacted_event_schema.json) for the authoritative redacted schema.
 
-```json
-{
-  "prompt_original_length": 157,
-  "prompt_redacted_length": 33,
-  "response_original_length": 686,
-  "response_redacted_length": 267
-}
-```
+### 3. Impact of the context-history split (upcoming)
 
-**Purpose:** Allows analysis of content density without seeing actual content
+The RAW stream is moving to a [context-history split](raw-vs-redacted-logs.md#upcoming-change-context-history-split),
+in which `prompt` and `response` are written to a separate S3 object instead of
+being embedded in the streamed event. That directly affects the paths listed above:
+`prompt.messages[].content[].text` and `response.choices[].content` will no longer
+exist on the streamed event, so a redactor reading only the Kinesis event has
+nothing to redact.
+
+**Not yet confirmed by the platform team** — do not assume either answer:
+
+- Whether the REDACTED pipeline also splits, or continues to emit inline
+  `prompt_redacted` / `response_redacted` content.
+- Whether the context-history document is PII-redacted for tenants on the redacted
+  path, or exists only on the raw path.
+- Whether `truncated` is retired from the redacted event as well as the raw event.
+
+This document describes the redaction behavior in production today. It will be
+updated once the split's redaction design is published.
 
 ---
 

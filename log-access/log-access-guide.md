@@ -397,6 +397,14 @@ python consume_logs.py
 
 Log files are in **NDJSON** (Newline Delimited JSON) format, optionally gzip-compressed.
 
+> **⚠️ Upcoming change — context-history split.** The RAW stream is changing so that
+> conversation content is written to a **separate S3 object** rather than embedded in
+> the streamed event. Firehose delivery, bucket, and dated prefix stay the same, but
+> `prompt`, `response`, and `truncated` leave the event; `status`,
+> `context_history_s3_key`, and a top-level `usage` are added. See
+> [Context-history split](#context-history-split-upcoming) below and the
+> [migration checklist](raw-vs-redacted-logs.md#migration-checklist-for-consumers).
+
 ### File Naming Pattern
 
 ```
@@ -405,6 +413,14 @@ Log files are in **NDJSON** (Newline Delimited JSON) format, optionally gzip-com
 
 Example: `2026/01/28/10-30-00-abc123def456.json`
 
+After the context-history split there is a second, separately keyed artifact per
+request holding the conversation content:
+
+```
+chat/{conversation_id}/{event_id}.json      # source = "chat"
+api/{user_id}/{event_id}.json               # source = "api"
+```
+
 ### File Contents
 
 Each line is a JSON object representing one analytics event.
@@ -412,40 +428,127 @@ Each line is a JSON object representing one analytics event.
 **RAW logs contain:**
 ```json
 {
-  "event_id": "uuid",
-  "event_time": "2026-02-01T15:16:17Z",
-  "user_id": "uuid",
-  "chat_id": "uuid",
-  "prompt": {"content": "Full user question text"},
-  "response": {"content": "Full AI response text"},
-  "model": "google_vertex_manifold_pipeline.gemini-2.5-flash",
-  "latency_ms": 8044,
-  "tokens_prompt": 4,
-  "tokens_response": 1134
+  "event_id": "024f481f-8e11-42cc-bd23-e39e0596a6b2",
+  "event_time": "2026-07-23T13:04:51.300501+00:00",
+  "source": "api",
+  "stream": true,
+  "kind": "chat_completion",
+  "user_id": "api-key-abcdefghijk",
+  "request_id": "111e111c-3f65-47d8-abf0-c2ddf6c2f994",
+  "model": "claude-sonnet-4.6",
+  "platform_model_id": "inference-profile/us.anthropic.claude-sonnet-4-6",
+  "truncated": false,
+  "prompt": {
+    "messages": [
+      { "role": "user", "content": [ { "type": "text", "text": "Full user question text" } ] }
+    ],
+    "tool_choice": "auto",
+    "tools": [ { "type": "function", "function": { "name": "read_file", "parameters": { "type": "object" } } } ]
+  },
+  "response": {
+    "choices": [ { "content": "Full AI response text", "finish_reason": "stop" } ],
+    "usage": { "prompt_tokens": 18452, "completion_tokens": 312, "total_tokens": 18764, "latency_ms": 4210 }
+  }
 }
 ```
 
 **REDACTED logs contain:**
 ```json
 {
-  "event_id": "uuid",
-  "event_time": "2026-02-01T15:16:17Z",
-  "user_id": "uuid",
-  "chat_id": "uuid",
-  "prompt_redacted": {"content": "Let'<PERSON>. <PERSON>."},
-  "prompt_original_length": 157,
-  "prompt_redacted_length": 33,
-  "response_redacted": {"content": "Understood! <PERSON>..."},
-  "response_original_length": 686,
-  "response_redacted_length": 267,
-  "model": "google_vertex_manifold_pipeline.gemini-2.5-flash",
-  "latency_ms": 2595,
-  "tokens_prompt": 39,
-  "tokens_response": 171
+  "event_id": "6e111d4e-928a-40fa-8bd9-8448637e9a6a",
+  "event_time": "2026-04-28T06:01:22.670432+00:00",
+  "source": "api",
+  "stream": false,
+  "kind": "chat_completion",
+  "user_id": "api-key-abcd",
+  "request_id": "a29e5dc8-a5ff-426e-b127-3b3e7716b09c",
+  "model": "gemini-2.5-pro",
+  "truncated": false,
+  "prompt_redacted": {
+    "messages": [
+      { "role": "user", "content": [ { "type": "text", "text": "... contact <PHONE> ..." } ] }
+    ],
+    "temperature": 0.0
+  },
+  "response_redacted": {
+    "choices": [ { "content": "...", "finish_reason": "stop" } ],
+    "usage": { "prompt_tokens": 9848, "completion_tokens": 206, "total_tokens": 11855 }
+  }
 }
 ```
 
-**See [raw-vs-redacted-logs.md](raw-vs-redacted-logs.md) for detailed comparison.**
+**See [raw-vs-redacted-logs.md](raw-vs-redacted-logs.md) for detailed comparison, and [examples/](examples/) for the full JSON Schemas.**
+
+### Context-history split (upcoming)
+
+**Status:** announced by the platform team; cutover date not yet published. Applies
+to the RAW stream. Whether the REDACTED stream also splits is not yet confirmed.
+
+After the split, each request produces **two** artifacts.
+
+**1. Metadata event** — one NDJSON line in the same dated prefix as today
+(schema: [`interaction_raw_metadata_event_schema.json`](examples/interaction_raw_metadata_event_schema.json)):
+
+```json
+{
+  "event_id": "fd0be7bb-48d2-4376-bd4d-774a965a779d",
+  "event_time": "2026-07-23T17:46:33.705182+00:00",
+  "source": "chat",
+  "stream": true,
+  "kind": "chat_completion",
+  "user_id": "9506e4f2-2b17-41e6-8ecc-b9c730b394c2",
+  "conversation_id": "e2065dd3-75ae-405c-aa81-2faef48853bd",
+  "request_id": "20b7b796-dafa-415f-a5ae-a753678cef2c",
+  "model": "gpt-5.5",
+  "platform_model_id": "gpt-5.5-DefaultV2",
+  "usage": { "prompt_tokens": 2237, "completion_tokens": 38, "total_tokens": 2275, "latency_ms": null },
+  "status": "success",
+  "context_history_s3_key": "chat/e2065dd3-75ae-405c-aa81-2faef48853bd/fd0be7bb-48d2-4376-bd4d-774a965a779d.json"
+}
+```
+
+**2. Context-history document** — a single JSON document (not NDJSON) at
+`context_history_s3_key`, holding `prompt` and `response`
+(schema: [`interaction_context_history_schema.json`](examples/interaction_context_history_schema.json)).
+
+**Fetching content for an event:**
+
+```bash
+KEY=$(head -1 log.json | jq -r '.context_history_s3_key')
+aws s3 cp s3://${BUCKET_NAME}/${KEY} ./context.json --region ${AWS_REGION}
+jq '.prompt.messages[-1], .response.choices[0].content' context.json
+```
+
+```python
+import json
+import boto3
+
+s3 = boto3.client("s3")
+
+def load_context(bucket, event):
+    """Fetch the conversation content for a split-format metadata event."""
+    key = event.get("context_history_s3_key")
+    if not key:
+        # Pre-cutover event: content is inline.
+        return {"prompt": event.get("prompt"), "response": event.get("response")}
+    body = s3.get_object(Bucket=bucket, Key=key)["Body"].read()
+    return json.loads(body)
+
+def token_usage(bucket, event):
+    """usage lives on the metadata event; fall back to the context document."""
+    usage = event.get("usage") or {}
+    if usage.get("total_tokens") is None:
+        usage = (load_context(bucket, event).get("response") or {}).get("usage", {})
+    return usage
+```
+
+The helper above handles both formats, so you can deploy it before cutover.
+
+**IAM note:** if your read policy was scoped to the dated
+`{YEAR}/{MONTH}/{DAY}/*` prefix, it will not cover `chat/*` and `api/*`. Request an
+updated policy from [usai-security@gsa.gov](mailto:usai-security@gsa.gov) before
+cutover. Whether the context-history documents land in the same bucket is one of
+the [open questions](raw-vs-redacted-logs.md#open-questions).
 
 ### Processing Log Files
 

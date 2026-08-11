@@ -128,19 +128,56 @@ head -5 log.json | jq .
 
 **Format:** NDJSON (one JSON object per line)
 
-**Example Event:**
+Each line is a `chat_completion` event. There are two shapes depending on which
+bucket you read from: **redacted** (`prompt_redacted` / `response_redacted`) and
+**raw** (`prompt` / `response`, plus `platform_model_id` and tool data). See the
+canonical schemas and examples in [`examples/`](./examples/).
+
+> **⚠️ Upcoming change:** the RAW stream is moving to a **context-history split** —
+> streamed events will carry metadata plus a `context_history_s3_key` pointer, and
+> conversation content will live in a separate S3 object. `prompt`, `response`, and
+> `truncated` disappear from the streamed event, `usage` moves to the top level, and
+> `usage.latency_ms` may be `null`. If you are building a consumer now, read
+> [Upcoming change: context-history split](./raw-vs-redacted-logs.md#upcoming-change-context-history-split)
+> and follow the migration checklist there.
+
+**Example Event (redacted):**
 ```json
 {
-  "event_id": "abc-123",
-  "event_time": "2026-02-17T10:30:00Z",
+  "event_id": "6e111d4e-928a-40fa-8bd9-8448637e9a6a",
+  "event_time": "2026-04-28T06:01:22.670432+00:00",
+  "source": "api",
+  "stream": false,
   "kind": "chat_completion",
-  "user_id": "user-456",
-  "model": "claude-sonnet-4",
-  "tokens_prompt": 21,
-  "tokens_response": 150,
-  "latency_ms": 250
+  "user_id": "api-key-abcd",
+  "request_id": "a29e5dc8-a5ff-426e-b127-3b3e7716b09c",
+  "model": "gemini-2.5-pro",
+  "truncated": false,
+  "prompt_redacted": {
+    "messages": [
+      { "role": "user", "content": [ { "type": "text", "text": "... contact <PHONE> ..." } ] }
+    ],
+    "temperature": 0.0
+  },
+  "response_redacted": {
+    "choices": [ { "content": "...", "finish_reason": "stop" } ],
+    "usage": { "prompt_tokens": 9848, "completion_tokens": 206, "total_tokens": 11855 }
+  }
 }
 ```
+
+**Field notes:**
+- Token counts live under `usage`: `prompt_tokens`, `completion_tokens`, `total_tokens`.
+- `latency_ms` is present in `response.usage` on **raw** events only.
+- Message text is a list of typed parts (`content[].text`), not a plain string.
+- **Raw** events add `platform_model_id`, `prompt.tools` / `tool_choice`, and `response.choices[].tool_calls`.
+- `source` is `"api"` for direct API traffic and `"chat"` for USAi Chat traffic.
+  Chat events carry a `conversation_id` and a UUID `user_id`; API events use an
+  api-key alias such as `api-key-<uuid>` or `local-api`.
+- **After the context-history split** (raw stream): `usage` moves to the top level,
+  `usage.latency_ms` may be `null`, `truncated` is removed, and `status` plus
+  `context_history_s3_key` are added. Content is fetched separately from
+  `context_history_s3_key`.
 
 **Common Operations:**
 ```bash
@@ -150,11 +187,27 @@ head -5 log.json | jq .
 # Count events
 wc -l log.json
 
-# Extract specific fields
-cat log.json | jq '{event_id, model, tokens_prompt, tokens_response}'
+# Extract key fields (redacted)
+cat log.json | jq '{event_id, model, usage: .response_redacted.usage}'
+
+# Extract key fields (raw)
+cat log.json | jq '{event_id, model, platform_model_id, usage: .response.usage}'
+
+# Extract key fields (raw, after the context-history split)
+cat log.json | jq '{event_id, model, platform_model_id, status, usage, context_history_s3_key}'
 
 # Count by model
 cat log.json | jq -r '.model' | sort | uniq -c
+
+# Sum total tokens (redacted)
+cat log.json | jq '.response_redacted.usage.total_tokens' | paste -sd+ - | bc
+
+# Sum total tokens (raw, after the context-history split)
+cat log.json | jq '.usage.total_tokens' | paste -sd+ - | bc
+
+# Fetch the conversation content for one event (after the split)
+KEY=$(head -1 log.json | jq -r '.context_history_s3_key')
+aws s3 cp s3://${BUCKET_NAME}/${KEY} - --region ${AWS_REGION} | jq .
 ```
 
 ---

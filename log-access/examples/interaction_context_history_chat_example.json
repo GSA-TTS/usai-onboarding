@@ -1,0 +1,90 @@
+{
+  "user_id": "9506e4f2-2b17-41e6-8ecc-b9c730b394c2",
+  "conversation_id": "e2065dd3-75ae-405c-aa81-2faef48853bd",
+  "prompt": {
+    "messages": [
+      {
+        "role": "system",
+        "content": [
+          {
+            "type": "text",
+            "text": "### purpose\nYou are a helpful assistant that works for a government agency. You are the LLM model: {{current_model}}\nYou help users with general knowledge, problem-solving, coding, ..."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Who is the current Administrator for the General Services Administration?"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [],
+        "tool_calls": [
+          {
+            "index": 0,
+            "id": "call_skqaxWgd2tuOUlF468FNyG1W",
+            "type": "function",
+            "function": {
+              "name": "web_search",
+              "arguments": "{\"query\":\"current Administrator of the General Services Administration GSA Administrator\"}"
+            }
+          }
+        ]
+      },
+      {
+        "role": "tool",
+        "tool_call_id": "call_skqaxWgd2tuOUlF468FNyG1W",
+        "content": "[{\"title\": \"Administrator for the General Services Administration | GSA\", \"link\": \"https://www.gsa.gov/about-gsa/organization/administrator\", \"snippet\": \"May 21, 2026 ... Ed Forst. As Administrator, Ed Forst brings 40 years of experience in managing complex organizations. ...\"}]"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "web_search",
+          "description": "Get snippets and links from Google PSE search",
+          "parameters": {
+            "properties": {
+              "query": {
+                "description": "The query to pass to Google",
+                "title": "Query",
+                "type": "string"
+              },
+              "time_limit": {
+                "anyOf": [
+                  {
+                    "enum": ["d1", "w1", "m1", "y1"],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Restrict results to a specific time. Use \"d1\" for last 24h, \"w1\" for last week, \"m1\" for last month, or \"y1\" for last year.",
+                "title": "Time Limit"
+              }
+            },
+            "required": ["query"],
+            "title": "SearchQuery",
+            "type": "object"
+          }
+        }
+      }
+    ],
+    "tool_choice": "auto"
+  },
+  "response": {
+    "choices": [
+      {
+        "content": "The current Administrator of the General Services Administration (GSA) is **Ed Forst** \u2014 also listed as **Edward C. Forst** on GSA materials.",
+        "finish_reason": "stop"
+      }
+    ]
+  }
+}
