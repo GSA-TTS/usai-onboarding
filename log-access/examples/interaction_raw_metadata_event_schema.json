@@ -69,7 +69,7 @@
     },
     "context_history_s3_key": {
       "type": "string",
-      "description": "S3 object key of the context-history document holding the full prompt/response for this event. Chat traffic: 'chat/{conversation_id}/{event_id}.json'. API traffic: 'api/{user_id}/{event_id}.json'.",
+      "description": "S3 object key of the context-history document holding the full prompt/response for this event. The object is in the SAME bucket as this metadata event; only the key prefix differs. Chat traffic: 'chat/{conversation_id}/{event_id}.json'. API traffic: 'api/{user_id}/{event_id}.json'.",
       "examples": [
         "chat/e2065dd3-75ae-405c-aa81-2faef48853bd/fd0be7bb-48d2-4376-bd4d-774a965a779d.json",
         "api/local-api/631241ad-d6c3-4625-94a2-880196702bdd.json"

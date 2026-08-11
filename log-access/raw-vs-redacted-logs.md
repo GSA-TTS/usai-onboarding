@@ -151,6 +151,9 @@ Benefits:
 
 ### What each request produces after the split
 
+Both artifacts land in the **same S3 bucket** you read today — only the key
+prefix differs. No new bucket is provisioned for the split.
+
 | Artifact | Delivered via | Location | Schema |
 |---|---|---|---|
 | **1. Metadata event** | Kinesis Firehose → S3 (unchanged prefix, NDJSON) | `{YEAR}/{MONTH}/{DAY}/{TIMESTAMP}-{UUID}.json` | [`interaction_raw_metadata_event_schema.json`](examples/interaction_raw_metadata_event_schema.json) |
@@ -250,8 +253,11 @@ if not usage.get("total_tokens"):
 5. Update any jq/SQL/Glue/Athena projections that reference `.response.usage`,
    `.prompt.messages`, or `truncated`.
 6. Confirm your IAM policy grants `s3:GetObject` on the `chat/*` and `api/*`
-   prefixes, not only the dated `{YEAR}/{MONTH}/{DAY}/*` prefix. If your policy
-   was scoped to the dated prefix, request an updated policy before cutover.
+   prefixes. The context-history documents are written to the **same bucket** you
+   read today, so no new bucket access is needed — but a policy scoped narrowly to
+   the dated `{YEAR}/{MONTH}/{DAY}/*` prefix will not cover them. Policies granting
+   bucket-wide read need no change; request an updated policy if yours is
+   prefix-scoped.
 
 ### Open questions
 
@@ -263,12 +269,12 @@ are answered. Do not assume an answer.
 2. **Canonical `usage` location** — metadata event, context document, or both.
 3. **Redacted stream** — does it split too, and is the context-history document
    PII-redacted for the redacted tenant path?
-4. **Bucket and prefix** for context-history documents: same bucket as the
-   metadata events, or a separate bucket? This determines whether already-issued
-   tenant IAM policies need to change.
-5. **`status` values** — the full set, and whether `truncated` is fully retired.
-6. **Retention and SQS notifications** for context-history objects — are S3
+4. **`status` values** — the full set, and whether `truncated` is fully retired.
+5. **Retention and SQS notifications** for context-history objects — are S3
    event notifications emitted for them, or only for the firehose objects?
+
+**Resolved:** context-history documents are written to the **same bucket** as the
+metadata events; no separate bucket is provisioned.
 
 Questions or migration help: [usai-security@gsa.gov](mailto:usai-security@gsa.gov).
 
