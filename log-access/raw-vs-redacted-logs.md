@@ -211,10 +211,13 @@ Full examples: [chat](examples/interaction_context_history_chat_example.json),
 ### Token usage location
 
 Read `usage` **from the metadata event first, then fall back to the
-context-history document** at `response.usage`. In the samples published by the
-platform team, chat traffic carries `usage` on the metadata event with no `usage`
-in the context document, while an API sample carried `usage` only inside the
-context document. Until that is reconciled, defensive reads are required:
+context-history document** at `response.usage`. This is the same order used by the
+USAi console pipeline, the reference consumer for these logs: it reads top-level
+`usage` and only consults `response.usage` for old-format records.
+
+The published samples show both placements — chat traffic carries `usage` on the
+metadata event, while an API sample carried it only inside the context document —
+so defensive reads remain the correct approach:
 
 ```bash
 # Token totals from metadata events, falling back is not possible in one pass —
@@ -266,15 +269,24 @@ are answered. Do not assume an answer.
 
 1. **Cutover date**, and whether old-format and new-format objects will coexist
    in the same prefix during a transition window.
-2. **Canonical `usage` location** — metadata event, context document, or both.
-3. **Redacted stream** — does it split too, and is the context-history document
-   PII-redacted for the redacted tenant path?
-4. **`status` values** — the full set, and whether `truncated` is fully retired.
-5. **Retention and SQS notifications** for context-history objects — are S3
+2. **Redacted stream** — does it split too, and is the context-history document
+   PII-redacted for the redacted tenant path? Tracked in
+   GSA-TTS/usai-console-pipeline#84, which flags that the redaction job may not
+   yet read the new prefixes. Until that is resolved, treat this document as
+   describing the **raw** stream only.
+3. **`status` values** — the full set, and whether `truncated` is fully retired.
+4. **Retention and SQS notifications** for context-history objects — are S3
    event notifications emitted for them, or only for the firehose objects?
 
-**Resolved:** context-history documents are written to the **same bucket** as the
-metadata events; no separate bucket is provisioned.
+### Resolved
+
+- **Same bucket.** Context-history documents are written to the same tenant bucket
+  as the metadata events; no separate bucket is provisioned. Only the key prefix
+  differs.
+- **Canonical `usage` location.** Read top-level `usage` first, then fall back to
+  `response.usage` in the context document. This matches the reference consumer in
+  the USAi console pipeline, which reads top-level `usage` and only consults
+  `response.usage` for old-format records.
 
 Questions or migration help: [usai-security@gsa.gov](mailto:usai-security@gsa.gov).
 
