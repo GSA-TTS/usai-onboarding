@@ -151,9 +151,9 @@ Benefits:
 
 ### What each request produces after the split
 
-Both artifacts land in the **same S3 bucket** you read today — only the key
-prefix differs. No new bucket is provisioned for the split.
-
+Both artifacts land in the **same tenant S3 bucket as the metadata event** for
+that stream (raw or redacted) — only the key prefix differs. No new bucket is
+provisioned for the split.
 | Artifact | Delivered via | Location | Schema |
 |---|---|---|---|
 | **1. Metadata event** | Kinesis Firehose → S3 (unchanged prefix, NDJSON) | `{YEAR}/{MONTH}/{DAY}/{TIMESTAMP}-{UUID}.json` | [`interaction_raw_metadata_event_schema.json`](examples/interaction_raw_metadata_event_schema.json) |
