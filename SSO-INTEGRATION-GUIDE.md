@@ -1,130 +1,136 @@
-# Single Sign-On Integration Guide
+# USAi Single Sign-On (SSO) Setup Guide
 
-This guide provides comprehensive instructions for integrating your Identity Provider (IdP) with USAi using Keycloak. USAi supports both OIDC (OpenID Connect) and SAML protocols, along with SCIM 2.0 for automated user and group provisioning.
+Welcome! This guide walks you through connecting your agency's identity system to USAi so your users can sign in with their existing credentials. The USAi team handles all of the backend configuration — you just need to set things up on your side and share a few details with us.
+
+---
 
 ## Table of Contents
-1. [Overview](#overview)
-2. [Prerequisites](#prerequisites)
-3. [Integration Options](#integration-options)
-4. [OIDC Integration](#oidc-integration)
-5. [SAML Integration](#saml-integration)
-6. [SCIM Provisioning](#scim-provisioning)
-7. [Attribute Mapping](#attribute-mapping)
-8. [Testing & Validation](#testing--validation)
-9. [Troubleshooting](#troubleshooting)
 
-## Overview
+1. [How It Works](#how-it-works)
+2. [Before You Begin](#before-you-begin)
+3. [Choose Your Integration Path](#choose-your-integration-path)
+4. [Microsoft Entra ID Setup (Recommended)](#microsoft-entra-id-setup-recommended)
+5. [Okta Setup](#okta-setup)
+6. [Other Identity Providers](#other-identity-providers)
+7. [SAML Setup (If Required)](#saml-setup-if-required)
+8. [Automated User Provisioning (SCIM)](#automated-user-provisioning-scim)
+9. [What Information We Need From You](#what-information-we-need-from-you)
+10. [How We Map User Attributes](#how-we-map-user-attributes)
+11. [Testing Your Integration](#testing-your-integration)
+12. [Going Live](#going-live)
+13. [Troubleshooting](#troubleshooting)
+14. [Getting Help](#getting-help)
 
-USAi uses Keycloak as its identity and access management solution, providing enterprise-grade SSO capabilities with support for:
+---
 
-- **OIDC (OpenID Connect)** - Modern OAuth 2.0-based authentication protocol (recommended)
-- **SAML 2.0** - Industry-standard federation protocol for enterprise SSO
-- **SCIM 2.0** - Automated user and group provisioning/deprovisioning
+## How It Works
 
-### Architecture
+USAi uses industry-standard protocols to connect securely with your agency's identity provider (IdP). Here's the high-level flow:
 
 ```
-Your Agency IdP → Keycloak (USAi) → USAi Application
-                     ↑
-              SCIM Provisioning
+Your Agency's Identity Provider  →  USAi Authentication Service  →  USAi Application
+                                            ↑
+                                  Automated User Provisioning
+                                     (optional via SCIM)
 ```
 
-## Prerequisites
+**In plain terms:**
+- Your users sign in using their existing agency credentials (the same ones they use every day).
+- Your identity provider verifies who they are and sends that confirmation to USAi.
+- USAi grants access — no separate passwords or accounts needed.
 
-Before beginning the integration, ensure you have:
+We support two authentication protocols:
+- **OIDC (OpenID Connect)** — Our recommended option. Modern, straightforward, and works great with cloud-based identity providers.
+- **SAML 2.0** — A well-established standard, often used in legacy enterprise environments.
 
-### From Your Agency
-- [ ] Admin access to your Identity Provider (Azure AD, Okta, Ping, etc.)
-- [ ] **For Microsoft Entra ID users**: Your Tenant ID (GUID)
-- [ ] Authority to register new applications in your IdP (or consent to USAi-created app for Entra)
-- [ ] Authority to grant admin consent for application permissions (Entra ID)
-- [ ] List of user attributes available for mapping
-- [ ] Security policies for SSO and user provisioning
-- [ ] IP addresses whitelisted (see [Firewall requests](#firewall-requests) in main README)
+We also support **SCIM 2.0** for automated user provisioning, so users can be automatically created and deactivated based on your directory — no manual account management in USAi.
 
-### From USAi Team
-- [ ] Keycloak URL: `https://auth.usai.gov`
-- [ ] Keycloak realm name for your agency
-- [ ] Client ID and Client Secret (for OIDC)
-- [ ] Metadata URLs or certificates (for SAML)
-- [ ] SCIM endpoint URL and bearer token
-- [ ] Scheduled co-work session
+---
 
-## Integration Options
+## Before You Begin
 
-### Option 1: OIDC Integration (Recommended)
+Please confirm you have the following:
 
-**Best for:**
-- Modern cloud-based identity providers (Azure AD, Okta, Auth0)
-- Implementations requiring token-based authentication
-- Mobile or API access scenarios
-- Simplified configuration and maintenance
+- [ ] **Admin access** to your identity provider (e.g., Microsoft Entra ID, Okta, Ping Identity)
+- [ ] **Authority to register a new application** in your identity provider
+- [ ] **Authority to grant admin consent** for application permissions (if using Microsoft Entra ID)
+- [ ] **Network access**: Ensure traffic is allowed to `https://auth.usai.gov` (see firewall requirements in the [Onboarding Guide](./README.md))
 
-**Benefits:**
-- Simpler configuration
-- Better support for modern authentication flows
-- Built-in token refresh capabilities
-- Native support in most cloud IdPs
+The USAi team will provide you with:
+- Your agency's dedicated **realm name** (used in redirect URLs)
+- A **SCIM bearer token** (if using automated provisioning)
+- A **scheduled co-work session** (if needed) to finalize configuration together
 
-### Option 2: SAML Integration
+---
 
-**Best for:**
-- Legacy enterprise SSO infrastructure
-- Organizations with existing SAML-based integrations
-- Specific compliance requirements mandating SAML
+## Choose Your Integration Path
 
-**Benefits:**
-- Well-established enterprise standard
-- Strong assertion-based security
-- Wide compatibility with enterprise systems
+| Approach | Best For | Complexity |
+|----------|----------|------------|
+| **OIDC** (Recommended) | Microsoft Entra ID, Okta, and modern cloud IdPs | Low |
+| **SAML** | Legacy enterprise SSO infrastructure or specific compliance requirements | Medium |
+| **Hybrid** | Agencies with multiple user populations on different protocols | Varies |
 
-### Option 3: Hybrid Approach
+Most agencies choose **OIDC**. If you're unsure, we recommend starting there.
 
-You can configure both OIDC and SAML simultaneously, allowing different user populations to authenticate using their preferred protocol.
+---
 
-## OIDC Integration
+## Microsoft Entra ID Setup (Recommended)
 
-### Step 1: Register USAi in Your IdP
+If your agency uses Microsoft Entra ID (formerly Azure AD), this is the fastest path. You create the app registration in your tenant — you maintain full control — and then share a few details with us. We handle the rest.
 
-#### For Microsoft Entra ID (Streamlined Setup - Recommended)
+### Step 1: Find Your Tenant ID
 
-If your agency uses Microsoft Entra ID (formerly Azure AD), USAi provides a streamlined setup process. This is the **recommended approach** as it ensures consistent configuration and reduces coordination time.
+1. Sign in to the [Azure Portal](https://portal.azure.com)
+2. Navigate to **Azure Active Directory** → **Overview**
+3. Copy the **Tenant ID** (a GUID like `12345678-1234-1234-1234-123456789abc`)
 
-**How it works:**
-1. **Your agency creates** the app registration in your Entra tenant (you maintain full control)
-2. **You provide us** with your Tenant ID, Client ID, and Client Secret
-3. **USAi automatically configures** the Keycloak side based on your information
+### Step 2: Create the App Registration
 
-**What we need from you:**
-- **Tenant ID**: Your Microsoft Entra tenant ID (GUID format)
-  - Find this in **Azure Portal** > **Azure Active Directory** > **Overview** > **Tenant ID**
-  - Example: `12345678-1234-1234-1234-123456789abc`
-- **Client ID**: The Application (client) ID after you create the app registration (see steps below)
-
-**Your setup steps:**
-
-1. Navigate to **Azure Portal** > **Azure Active Directory** > **App registrations**
+1. In the Azure Portal, go to **Azure Active Directory** → **App registrations**
 2. Click **New registration**
-3. Configure the application:
-   ```
-   Name: USAi - [Your Agency Name]
-   Supported account types: Accounts in this organizational directory only
-   Redirect URI: Web - https://auth.usai.gov/realms/your-realm/broker/oidc/endpoint
-   ```
-4. After creation, note the **Application (client) ID**
-5. Navigate to **Certificates & secrets** > **New client secret**
-6. Create a secret (recommended: 24-month expiration) and securely save the value
-7. Navigate to **Token configuration** and add optional claims:
-   - email
-   - family_name
-   - given_name
-   - upn
-8. Navigate to **API permissions** and ensure these are added:
-   - Microsoft Graph > User.Read (Delegated)
-   - OpenID permissions: openid, profile, email
-9. Click **Grant admin consent for [Your Organization]**
+3. Fill in the details:
 
-**What to send us:** Email partnerships@usai.gov with:
+   | Field | Value |
+   |-------|-------|
+   | **Name** | `USAi - [Your Agency Name]` |
+   | **Supported account types** | Accounts in this organizational directory only |
+   | **Redirect URI** | Platform: **Web** — URI: `https://auth.usai.gov/realms/your-realm/broker/oidc/endpoint` |
+
+   > ⚠️ Replace `your-realm` with the realm name provided by the USAi team.
+
+4. Click **Register**
+5. On the app's overview page, copy the **Application (client) ID**
+
+### Step 3: Create a Client Secret
+
+1. In your app registration, go to **Certificates & secrets**
+2. Click **New client secret**
+3. Add a description (e.g., "USAi SSO") and set expiration to **24 months** (recommended)
+4. Click **Add**
+5. **Immediately copy the secret value** — you won't be able to see it again
+
+### Step 4: Configure Token Claims
+
+1. Go to **Token configuration**
+2. Click **Add optional claim** and add these for the **ID token**:
+   - `email`
+   - `family_name`
+   - `given_name`
+   - `upn`
+
+### Step 5: Set API Permissions
+
+1. Go to **API permissions**
+2. Ensure the following permissions are present (add them if not):
+   - **Microsoft Graph** → `User.Read` (Delegated)
+   - **OpenID permissions**: `openid`, `profile`, `email`
+3. Click **Grant admin consent for [Your Organization]**
+
+### Step 6: Send Us Your Details
+
+Email **partnerships@usai.gov** with:
+
 ```
 Subject: Microsoft Entra OIDC Configuration - [Your Agency Name]
 
@@ -135,727 +141,399 @@ Agency Name: [your-agency-name]
 Technical Contact: [name and email]
 ```
 
-**What USAi will do:**
-The USAi team will automatically:
-1. Configure the Keycloak identity provider with your Entra settings
-2. Set up proper OIDC endpoints based on your Tenant ID
-3. Configure attribute mappers for user profile fields
-4. Set appropriate user session settings
-5. Enable and test the identity provider
+### What Happens Next
 
-**Timeline:** Keycloak configuration typically completes within 1 business day after receiving your information.
+Once we receive your information, the USAi team will:
+
+1. Configure the connection on our side using your Tenant ID and credentials
+2. Set up proper endpoint URLs automatically
+3. Map your user attributes (email, first name, last name, etc.)
+4. Enable the integration and notify you when it's ready to test
+
+**Typical turnaround: 1 business day.**
+
+> 💡 **Prefer a hands-on session?** If you'd rather configure the integration together in real time, let us know and we'll set up a co-work session.
 
 ---
 
-#### For Microsoft Entra ID (Manual Co-work Setup)
+## Okta Setup
 
-If you prefer to configure both the Entra app and Keycloak during a live co-work session:
+### Step 1: Create the App Integration
 
-1. Create the app registration following the same steps as above
-2. Bring the Client ID and Client Secret to the co-work session
-3. We'll configure Keycloak together in real-time
-4. We'll test the integration during the session
-
-This approach is useful if you want hands-on involvement in the Keycloak configuration or have specific customization needs.
-
-#### For Okta
-
-1. Navigate to **Applications** > **Create App Integration**
+1. In the Okta Admin Console, go to **Applications** → **Create App Integration**
 2. Select **OIDC - OpenID Connect** and **Web Application**
 3. Configure the application:
-   ```
-   App integration name: USAi - [Your Agency Name]
-   Grant type: Authorization Code
-   Sign-in redirect URIs: https://auth.usai.gov/realms/your-realm/broker/oidc/endpoint
-   Sign-out redirect URIs: https://auth.usai.gov/realms/your-realm/broker/oidc/endpoint
-   ```
-4. Click **Save** and note the **Client ID** and **Client Secret**
 
-#### For Other OIDC Providers
+   | Field | Value |
+   |-------|-------|
+   | **App integration name** | `USAi - [Your Agency Name]` |
+   | **Grant type** | Authorization Code |
+   | **Sign-in redirect URI** | `https://auth.usai.gov/realms/your-realm/broker/oidc/endpoint` |
+   | **Sign-out redirect URI** | `https://auth.usai.gov/realms/your-realm/broker/oidc/endpoint` |
 
-Consult your IdP documentation for creating an OIDC client application. You'll need:
-- Authorization endpoint
-- Token endpoint
-- UserInfo endpoint
-- JWKS URI (for token validation)
-- Issuer URL
+   > ⚠️ Replace `your-realm` with the realm name provided by the USAi team.
 
-### Step 2: Configure Identity Provider in Keycloak
+4. Click **Save**
+5. Copy the **Client ID** and **Client Secret**
 
-During the co-work session, the USAi team will configure Keycloak with your IdP information:
+### Step 2: Send Us Your Details
 
-1. **Basic Configuration**
-   - Alias: Your agency identifier (e.g., `agency-oidc`)
-   - Display Name: What users see on login page
-   - Enabled: Yes
-   
-2. **OIDC Settings**
-   - Authorization URL: `https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize` (Azure AD example)
-   - Token URL: `https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token`
-   - Client ID: From Step 1
-   - Client Secret: From Step 1
-   - Client Authentication: Client secret sent as post
-   - Validate Signatures: Yes
-   - Use JWKS URL: Yes
-   - JWKS URL: Your IdP's JWKS endpoint
+Email **partnerships@usai.gov** with:
 
-3. **User Session Configuration**
-   - Sync mode: Force
-   - Trust Email: Yes (if your IdP is authoritative)
-   - Account Linking Only: No (for first-time user creation)
+```
+Subject: Okta OIDC Configuration - [Your Agency Name]
 
-### Step 3: Test OIDC Connection
-
-1. Navigate to `https://auth.usai.gov`
-2. Click the SSO button for your agency
-3. You should be redirected to your IdP login page
-4. After successful authentication, you should be redirected back to USAi
-5. Verify user profile is populated correctly
-
-## SAML Integration
-
-### Step 1: Download USAi SAML Metadata
-
-The USAi team will provide:
-- **Entity ID**: `https://auth.usai.gov/realms/your-realm`
-- **ACS URL**: `https://auth.usai.gov/realms/your-realm/broker/saml/endpoint`
-- **SAML Metadata XML**: Complete metadata file
-
-### Step 2: Register USAi in Your IdP
-
-#### For Azure AD / Entra ID
-
-1. Navigate to **Enterprise Applications** > **New application**
-2. Select **Create your own application**
-3. Choose **Integrate any other application you don't find in the gallery (Non-gallery)**
-4. Name it: `USAi - [Your Agency Name]`
-5. Navigate to **Single sign-on** > **SAML**
-6. Click **Upload metadata file** and upload the USAi SAML metadata XML
-7. Configure **User Attributes & Claims**:
-   ```
-   Required claims:
-   - Unique User Identifier: user.userprincipalname
-   - Email: user.mail
-   - First Name: user.givenname
-   - Last Name: user.surname
-   ```
-8. Download the **Federation Metadata XML**
-
-#### For Okta
-
-1. Navigate to **Applications** > **Create App Integration**
-2. Select **SAML 2.0**
-3. Configure General Settings:
-   ```
-   App name: USAi - [Your Agency Name]
-   ```
-4. Configure SAML Settings:
-   ```
-   Single sign on URL: https://auth.usai.gov/realms/your-realm/broker/saml/endpoint
-   Audience URI (SP Entity ID): https://auth.usai.gov/realms/your-realm
-   Name ID format: EmailAddress
-   Application username: Email
-   ```
-5. Configure Attribute Statements:
-   ```
-   email: user.email
-   firstName: user.firstName
-   lastName: user.lastName
-   ```
-6. Click **Next** and complete the wizard
-7. Navigate to **Sign On** tab and click **View SAML setup instructions**
-8. Save the metadata XML or configuration URLs
-
-### Step 3: Configure SAML Identity Provider in Keycloak
-
-During the co-work session, the USAi team will:
-
-1. Import your IdP's SAML metadata
-2. Configure SAML settings:
-   - Single Sign-On Service URL
-   - Single Logout Service URL
-   - NameID Policy Format: Email or Persistent
-   - Want AuthnRequests Signed: Yes
-   - Signature Algorithm: RSA_SHA256
-   - SAML Signature Key Name: CERT_SUBJECT
-3. Configure attribute mappers (see [Attribute Mapping](#attribute-mapping))
-4. Enable the identity provider
-
-### Step 4: Test SAML Connection
-
-1. Navigate to `https://auth.usai.gov`
-2. Click the SSO button for your agency
-3. You should be redirected to your IdP SAML login page
-4. After authentication, verify SAML response contains required attributes
-5. Confirm successful login to USAi
-
-## SCIM Provisioning
-
-SCIM (System for Cross-domain Identity Management) enables automated user lifecycle management between your IdP and USAi.
-
-For the customer-facing step-by-step SCIM setup, including the exact Microsoft
-Entra UI screens for user mappings, group mappings, provisioning scope, and
-`active = false` deprovisioning behavior, see the
-[SCIM Provisioning Guide](./SCIM-PROVISIONING-GUIDE.md).
-
-### Benefits of SCIM Provisioning
-
-- **Automated User Creation**: New users are automatically provisioned when added to your IdP
-- **Real-time Updates**: User attribute changes sync immediately
-- **Automated Deprovisioning**: Users removed from IdP are automatically deactivated in USAi
-- **Group Management**: Group memberships are synchronized for access control
-- **Centralized Authorization**: Use SCIM groups for role-based access control
-
-### SCIM Configuration Options
-
-USAi supports two mutually exclusive approaches for user provisioning:
-
-#### Option 1: SCIM Provisioning (Recommended for Enterprise)
-When SCIM provisioning is enabled, Just-in-Time (JIT) provisioning is automatically disabled. Users are **only** created via SCIM, not on first sign-in. This provides:
-- ✅ **Centralized control** - IT controls who has access via IdP
-- ✅ **Group-based authorization** - Roles assigned via SCIM group membership
-- ✅ **Better audit trail** - All provisioning events logged in IdP
-- ✅ **Prevents unauthorized access** - Users can't self-provision on first login
-
-**When you enable SCIM provisioning:**
-The USAi team will automatically configure:
-- First Broker Login Flow: Disabled for automatic user creation
-- SCIM as the sole provisioning method
-- Group synchronization (if requested)
-
-**Important:** Users must be provisioned via SCIM before they can sign in. If a user attempts to sign in before being provisioned via SCIM, they will receive an access denied message.
-
-#### Option 2: Just-in-Time (JIT) Provisioning (Default without SCIM)
-If you do **not** enable SCIM provisioning, JIT provisioning is used by default. Users are automatically created on first sign-in. This provides:
-- ✅ **Easier initial rollout** - Users can access immediately after SSO setup
-- ✅ **Self-service access** - No manual provisioning required
-- ⚠️ **Less control** - Any user with IdP access can create an account
-- ⚠️ **No group synchronization** - Group memberships must be managed manually in USAi
-
-**Note:** You cannot have both SCIM and JIT enabled simultaneously. Enabling SCIM automatically disables JIT provisioning.
-
-### SCIM Configuration Requirements
-
-The USAi team will provide:
-- **SCIM Base URL**: `https://auth.usai.gov/realms/your-realm/scim/v2`
-- **Authentication Method**: Bearer Token
-- **Bearer Token**: Long-lived API token for SCIM operations
-- **Supported Operations**: Create, Read, Update, Delete, Search (for Users and Groups)
-
-**What to tell us:**
-- Whether you want SCIM provisioning enabled (this will automatically disable JIT provisioning)
-- Whether you want group synchronization enabled
-- Which IdP groups should map to USAi roles (if using group-based authorization)
-
-### Step 1: Configure SCIM in Your IdP
-
-#### For Azure AD / Entra ID
-
-1. Navigate to your Enterprise Application for USAi
-2. Go to **Provisioning** > **Get started**
-3. Set **Provisioning Mode** to **Automatic**
-4. Configure **Admin Credentials**:
-   ```
-   Tenant URL: https://auth.usai.gov/realms/your-realm/scim/v2
-   Secret Token: [Bearer token provided by USAi team]
-   ```
-5. Click **Test Connection** to validate
-6. Configure **Mappings**:
-   
-   **Provision Azure Active Directory Users:**
-   - userName → userName
-   - Switch([IsSoftDeleted], , "False", "True", "True", "False") → active
-   - mail → emails[type eq "work"].value
-   - givenName → name.givenName
-   - surname → name.familyName
-   - displayName → displayName
-   
-   **Provision Azure Active Directory Groups** (enable this for group-based authorization):
-   - displayName → displayName
-   - members → members
-   
-   **Important for SCIM-Only Provisioning:**
-   - Go to **Settings** > **Scope**
-   - Select **Sync only assigned users and groups**
-   - This ensures only explicitly assigned users are provisioned (prevents self-provisioning)
-
-7. **Configure Group Assignment** (if using group-based authorization):
-   - Navigate to **Users and groups** in your Enterprise Application
-   - Click **Add user/group**
-   - Select the Entra ID groups that should have access to USAi
-   - These groups will be synchronized via SCIM with their members
-
-8. Set **Provisioning Status** to **On**
-9. Click **Save** and wait for initial sync (typically 20-40 minutes)
-
-#### For Okta
-
-1. Navigate to your USAi application
-2. Go to **Provisioning** tab
-3. Click **Configure API Integration**
-4. Check **Enable API integration**
-5. Configure:
-   ```
-   Base URL: https://auth.usai.gov/realms/your-realm/scim/v2
-   API Token: [Bearer token provided by USAi team]
-   ```
-6. Click **Test API Credentials**
-7. Navigate to **To App** settings
-8. Enable:
-   - Create Users
-   - Update User Attributes
-   - Deactivate Users
-   - Sync Password (optional)
-9. Configure attribute mappings as needed
-10. Navigate to **Provisioning** > **To App** and enable provisioning
-
-### Step 2: Test SCIM Provisioning
-
-#### Manual Testing with curl
-
-```bash
-# Set environment variables
-export SCIM_BASE_URL="https://auth.usai.gov/realms/your-realm/scim/v2"
-export SCIM_TOKEN="your-bearer-token"
-
-# Test 1: Get Service Provider Configuration
-curl -X GET "${SCIM_BASE_URL}/ServiceProviderConfig" \
-  -H "Authorization: Bearer ${SCIM_TOKEN}" \
-  -H "Accept: application/scim+json" | jq '.'
-
-# Expected: Configuration showing supported features
-
-# Test 2: List Users
-curl -X GET "${SCIM_BASE_URL}/Users" \
-  -H "Authorization: Bearer ${SCIM_TOKEN}" \
-  -H "Accept: application/scim+json" | jq '.'
-
-# Expected: List of provisioned users
-
-# Test 3: Search for specific user
-curl -X GET "${SCIM_BASE_URL}/Users?filter=userName eq \"user@agency.gov\"" \
-  -H "Authorization: Bearer ${SCIM_TOKEN}" \
-  -H "Accept: application/scim+json" | jq '.'
-
-# Test 4: List Groups
-curl -X GET "${SCIM_BASE_URL}/Groups" \
-  -H "Authorization: Bearer ${SCIM_TOKEN}" \
-  -H "Accept: application/scim+json" | jq '.'
-
-# Expected: List of provisioned groups
+Client ID: [your-client-id]
+Client Secret: [your-client-secret]
+Okta Domain: [your-org].okta.com
+Agency Name: [your-agency-name]
+Technical Contact: [name and email]
 ```
 
-#### Comprehensive SCIM Testing
+---
 
-For comprehensive SCIM testing including user creation, updates, group management, and cleanup, refer to the complete [SCIM Testing Guide](./SCIM-TESTING-GUIDE.md) included in this repository.
+## Other Identity Providers
 
-The testing guide includes:
-- Full CRUD operations for users and groups
-- Pagination and filtering tests
-- Error handling scenarios
-- Automated test scripts
-- Cleanup procedures
+If you use a different OIDC-compatible identity provider (Ping Identity, Auth0, etc.), we can work with that too. Please gather the following from your IdP and send them to us:
 
-#### IdP-based Testing
+- **Authorization endpoint URL**
+- **Token endpoint URL**
+- **UserInfo endpoint URL**
+- **JWKS URI** (for token validation)
+- **Issuer URL**
+- **Client ID and Client Secret**
 
-1. **Create a Test User** in your IdP
-   - Assign the user to the USAi application
-   - Wait 5-10 minutes for sync (or trigger manual sync)
-   - Verify user appears in USAi Keycloak admin console
+Email these details to **partnerships@usai.gov** and we'll configure the integration on our side.
 
-2. **Update Test User** attributes
-   - Change name or email in IdP
-   - Wait for sync
-   - Verify changes reflected in USAi
+---
 
-3. **Remove Test User** from application
-   - Unassign user from USAi in IdP
-   - Wait for sync
-   - Verify user is deactivated (not deleted) in USAi
+## SAML Setup (If Required)
 
-4. **Test Group Provisioning** (if enabled)
-   - Create a group in IdP
-   - Assign users to the group
-   - Assign group to USAi application
-   - Verify group and members appear in USAi
+If your agency requires SAML instead of OIDC, here's how to set it up.
 
-### Group-Based Authorization Workflow
+### Step 1: Request SAML Metadata From USAi
 
-If you're using SCIM-only provisioning with group-based authorization, here's the recommended workflow:
+Contact **partnerships@usai.gov** and we'll provide you with:
+- **Entity ID**: `https://auth.usai.gov/realms/your-realm`
+- **ACS (Assertion Consumer Service) URL**: `https://auth.usai.gov/realms/your-realm/broker/saml/endpoint`
+- **SAML Metadata XML file**
 
-#### Initial Setup
-1. **Create Entra ID Groups** for different USAi roles/access levels:
-   - Example: `USAi-Users`, `USAi-Admins`, `USAi-PowerUsers`
-2. **Assign groups to the USAi Enterprise Application** in Entra
-3. **Configure SCIM group provisioning** as described above
-4. **Wait for initial SCIM sync** to complete
+### Step 2: Register USAi in Your Identity Provider
 
-#### User Onboarding Process
-1. **Add user to appropriate Entra ID group(s)**
-   - User membership is synchronized to USAi via SCIM
-   - User account is automatically created in USAi
-   - Group memberships are reflected in USAi
-2. **Map SCIM groups to USAi roles** (USAi team configures):
-   - Entra group `USAi-Admins` → USAi Admin role
-   - Entra group `USAi-Users` → USAi User role
-3. **User can now sign in** via SSO
-   - Authentication happens via OIDC/SAML
-   - Authorization (roles) determined by SCIM group membership
+#### Microsoft Entra ID
 
-#### User Offboarding Process
-1. **Remove user from Entra ID group** or **unassign from application**
-2. **SCIM sync automatically deactivates user** in USAi
-3. **User loses access** on next authentication attempt
+1. Go to **Enterprise Applications** → **New application** → **Create your own application**
+2. Select **Integrate any other application you don't find in the gallery**
+3. Name it `USAi - [Your Agency Name]`
+4. Navigate to **Single sign-on** → **SAML**
+5. Click **Upload metadata file** and upload the metadata XML we provided
+6. Configure **User Attributes & Claims**:
 
-#### Role Changes
-1. **Change user's group membership** in Entra ID
-2. **SCIM sync updates** group membership in USAi
-3. **User's roles/permissions automatically updated**
+   | Claim | Source Attribute |
+   |-------|-----------------|
+   | Unique User Identifier (NameID) | `user.userprincipalname` |
+   | Email | `user.mail` |
+   | First Name | `user.givenname` |
+   | Last Name | `user.surname` |
 
-**Benefits of this approach:**
-- No manual user management in USAi
-- Authorization managed centrally in Entra ID
-- Automatic compliance with organizational group policies
-- Clear audit trail of all access changes
+7. Download **Federation Metadata XML** from the SAML Signing Certificate section
+8. Send the Federation Metadata XML to **partnerships@usai.gov**
 
-### SCIM Monitoring and Troubleshooting
+#### Okta
 
-#### Azure AD Provisioning Logs
+1. Go to **Applications** → **Create App Integration** → **SAML 2.0**
+2. Set the app name to `USAi - [Your Agency Name]`
+3. Configure SAML settings:
 
-1. Navigate to **Enterprise Applications** > **USAi** > **Provisioning logs**
-2. Review sync cycles for:
-   - Successfully provisioned users/groups
-   - Failed operations
-   - Skipped entries
-3. Download logs for detailed analysis if needed
+   | Field | Value |
+   |-------|-------|
+   | **Single sign-on URL** | `https://auth.usai.gov/realms/your-realm/broker/saml/endpoint` |
+   | **Audience URI (SP Entity ID)** | `https://auth.usai.gov/realms/your-realm` |
+   | **Name ID format** | EmailAddress |
+   | **Application username** | Email |
 
-#### Okta Provisioning Logs
+4. Add attribute statements:
 
-1. Navigate to **Reports** > **System Log**
-2. Filter by:
-   - Event Type: `user.provision.*`
-   - Target: Your USAi application
-3. Review successful and failed provisioning events
+   | Name | Value |
+   |------|-------|
+   | `email` | `user.email` |
+   | `firstName` | `user.firstName` |
+   | `lastName` | `user.lastName` |
 
-#### Common SCIM Issues
+5. Complete the wizard, then go to the **Sign On** tab
+6. Download or copy the SAML metadata and send it to **partnerships@usai.gov**
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| 401 Unauthorized | Invalid or expired bearer token | Request new token from USAi team |
-| 409 Conflict | User already exists | Check for duplicate emails or usernames |
-| 400 Bad Request | Invalid attribute format | Verify attribute mapping matches SCIM schema |
-| 404 Not Found | User/group doesn't exist | Ensure initial sync completed successfully |
-| 429 Too Many Requests | Rate limiting | Reduce sync frequency or batch size |
+---
 
-## Attribute Mapping
+## Automated User Provisioning (SCIM)
 
-Proper attribute mapping ensures user profiles are populated correctly in USAi.
+SCIM provisioning lets your agency manage USAi user records, user attributes,
+groups, group membership, and active/inactive state from your identity provider.
+SSO still handles authentication; SCIM handles provisioning.
+
+For complete SCIM setup instructions, use the
+[SCIM Provisioning Guide](./SCIM-PROVISIONING-GUIDE.md). That guide is the
+authoritative source for:
+
+- Microsoft Entra ID and Okta SCIM connector setup
+- SCIM Base URL / Tenant URL and bearer token usage
+- Existing USAi users
+- SCIM versus Just-in-Time user creation
+- User and group attribute mappings
+- Provisioning scope
+- Group ownership and role mapping
+- Deprovisioning behavior, including `active = false` soft deactivation versus
+  hard-delete requests
+- Testing and troubleshooting provisioning syncs
+
+Before enabling SCIM, decide and share with the USAi team:
+
+| Decision | Why it matters |
+|----------|----------------|
+| Whether SCIM should manage users, groups, or both | Controls which objects your IdP syncs to USAi |
+| Whether SCIM should manage existing USAi users or only newly assigned users | Prevents unintended changes to existing accounts |
+| Which IdP groups should map to USAi roles | Determines authorization after sign-in |
+| Intended deprovisioning behavior | Determines whether removal disables users, removes group access, leaves accounts unchanged, or hard-deletes records |
+
+For most agencies, USAi recommends assigning groups to the provisioning
+application, syncing only assigned users and groups, and using `active = false`
+soft deactivation rather than hard deletion.
+
+---
+
+## What Information We Need From You
+
+Here's a summary of everything we'll need, depending on your setup:
+
+### For OIDC (All Providers)
+
+| Item | Required? |
+|------|-----------|
+| Identity provider name (e.g., "Entra ID", "Okta") | ✅ Yes |
+| Client ID | ✅ Yes |
+| Client Secret | ✅ Yes |
+| Tenant ID (Entra) or Okta domain | ✅ Yes |
+| Agency name | ✅ Yes |
+| Technical contact (name + email) | ✅ Yes |
+
+### For SAML
+
+| Item | Required? |
+|------|-----------|
+| Federation Metadata XML from your IdP | ✅ Yes |
+| Agency name | ✅ Yes |
+| Technical contact (name + email) | ✅ Yes |
+
+### For SCIM
+
+| Item | Required? |
+|------|-----------|
+| Confirmation that you want SCIM enabled | ✅ Yes |
+| Whether SCIM should manage users, groups, or both | ✅ Yes |
+| Whether SCIM should manage all existing USAi users or only newly assigned users | ✅ Yes |
+| Intended deprovisioning behavior | ✅ Yes |
+| List of IdP groups → USAi role mappings | If using groups |
+| Technical contact who can view provisioning logs during testing | ✅ Yes |
+
+---
+
+## How We Map User Attributes
+
+When your users sign in, their profile information flows from your identity provider into USAi. Here's what we map:
 
 ### Required Attributes
 
-| USAi Attribute | OIDC Claim | SAML Attribute | Description |
-|----------------|------------|----------------|-------------|
-| username | preferred_username or email | NameID or email | Unique identifier |
-| email | email | email or mail | User's email address |
-| firstName | given_name | firstName or givenName | User's first name |
-| lastName | family_name | lastName or surname | User's last name |
+| What USAi Needs | What Your IdP Sends (OIDC) | What Your IdP Sends (SAML) |
+|-----------------|---------------------------|---------------------------|
+| Username | `preferred_username` or `email` | NameID or `email` |
+| Email address | `email` | `email` or `mail` |
+| First name | `given_name` | `firstName` or `givenName` |
+| Last name | `family_name` | `lastName` or `surname` |
 
 ### Optional Attributes
 
-| USAi Attribute | OIDC Claim | SAML Attribute | Purpose |
-|----------------|------------|----------------|---------|
-| displayName | name | displayName | Full name for display |
-| department | department | department | User's department/org |
-| title | job_title | title | Job title |
-| phone | phone_number | telephoneNumber | Contact number |
-| organization | org_code | organization | Org code for multi-org agencies |
+| What USAi Needs | What Your IdP Sends (OIDC) | What Your IdP Sends (SAML) |
+|-----------------|---------------------------|---------------------------|
+| Display name | `name` | `displayName` |
+| Department | `department` | `department` |
+| Job title | `job_title` | `title` |
+| Phone number | `phone_number` | `telephoneNumber` |
+| Organization code | `org_code` | `organization` |
 
-### Custom Attribute Mapping Example (Keycloak)
+> 💡 If your IdP uses different attribute names, let us know and we'll adjust our mapping to match.
 
-During the co-work session, we'll configure mappers like:
+---
 
-```json
-{
-  "name": "email",
-  "protocol": "openid-connect",
-  "protocolMapper": "oidc-usermodel-property-mapper",
-  "config": {
-    "user.attribute": "email",
-    "claim.name": "email",
-    "jsonType.label": "String",
-    "id.token.claim": "true",
-    "access.token.claim": "true",
-    "userinfo.token.claim": "true"
-  }
-}
-```
+## Testing Your Integration
 
-## Testing & Validation
+Once we've confirmed the configuration is complete, here's how to verify everything is working:
 
-### Pre-Production Testing Checklist
+### SSO Authentication Test
 
-- [ ] Test user can successfully authenticate via SSO
-- [ ] User profile attributes are correctly mapped
-- [ ] User can access appropriate USAi features based on roles
-- [ ] Logout functionality works correctly
-- [ ] Session timeout behaves as expected
-- [ ] SCIM provisioning creates users automatically (if configured)
-- [ ] SCIM updates sync within expected timeframe
-- [ ] SCIM deprovisioning deactivates users correctly
-- [ ] Error messages are user-friendly and don't expose sensitive information
+1. Open your browser and navigate to `https://auth.usai.gov`
+2. Click the SSO button for your agency
+3. You should be redirected to your identity provider's login page
+4. Sign in with your agency credentials
+5. After successful authentication, you should be redirected back to USAi
+6. Verify your name and email appear correctly in your USAi profile
 
-### Security Validation
+### SCIM Provisioning Test (If Enabled)
 
-- [ ] Verify HTTPS is enforced for all endpoints
-- [ ] Confirm token/assertion signatures are validated
-- [ ] Test session management and timeout policies
-- [ ] Verify tokens are not leaked in URLs or logs
-- [ ] Confirm proper logout terminates all sessions
-- [ ] Test access with expired/invalid tokens (should fail)
-- [ ] Verify SCIM API is only accessible with valid bearer token
+1. **Create a test user** in your IdP and assign them to the USAi application
+2. Wait 5–10 minutes (or trigger a manual sync)
+3. Confirm with us that the user appeared in USAi
+4. **Update the test user's** name or email in your IdP
+5. Wait for sync and confirm the change was reflected
+6. **Remove the test user** from the application
+7. Confirm the configured deprovisioning behavior occurred in USAi
 
-### Production Rollout Checklist
+### Pre-Go-Live Checklist
 
-- [ ] Document SSO configuration for your records
-- [ ] Train helpdesk staff on SSO-related issues
-- [ ] Prepare user communication about SSO rollout
-- [ ] Set up monitoring for authentication errors
-- [ ] Establish escalation path for SSO issues
-- [ ] Schedule follow-up review after 30 days
+- [ ] Test user can successfully sign in via SSO
+- [ ] User profile (name, email) appears correctly after sign-in
+- [ ] User can access the appropriate USAi features
+- [ ] Logout works correctly from both USAi and your IdP
+- [ ] SCIM creates new users automatically (if enabled)
+- [ ] SCIM applies the configured deprovisioning behavior for removed users (if enabled)
+- [ ] SCIM syncs group memberships correctly (if enabled)
+
+---
+
+## Going Live
+
+Before rolling out SSO to all your users:
+
+- [ ] Complete all testing from the checklist above
+- [ ] Document the SSO configuration for your internal records
+- [ ] Brief your helpdesk team on SSO-related issues and how to escalate
+- [ ] Communicate the change to your users (when it takes effect, what to expect)
+- [ ] Set up monitoring for authentication errors (in your IdP logs)
+- [ ] Confirm an escalation path with the USAi team for urgent issues
+- [ ] Schedule a follow-up review 30 days after go-live
+
+---
 
 ## Troubleshooting
 
-### Common OIDC Issues
+### "Invalid redirect URI" Error
 
-#### "Invalid redirect URI" error
+**What it means:** The redirect URL in your app registration doesn't match what USAi expects.
 
-**Cause**: Redirect URI mismatch between IdP and Keycloak
+**How to fix it:**
+1. In your identity provider, verify the redirect URI is exactly: `https://auth.usai.gov/realms/your-realm/broker/oidc/endpoint`
+2. Check for common mistakes: trailing slashes, `http` instead of `https`, or a typo in the realm name
+3. If everything looks correct on your side, contact us — there may be a mismatch on ours
 
-**Solution**: 
-1. Verify redirect URI in IdP exactly matches: `https://auth.usai.gov/realms/your-realm/broker/oidc/endpoint`
-2. Check for trailing slashes or http vs https mismatches
-3. Contact USAi team to verify Keycloak configuration
+### "Invalid client credentials" Error
 
-#### "Invalid client credentials" error
+**What it means:** The Client ID or Client Secret doesn't match.
 
-**Cause**: Incorrect Client ID or Secret
+**How to fix it:**
+1. Verify the Client ID and Secret in your identity provider
+2. Check whether the secret has expired — if so, generate a new one and send it to us
+3. Contact us to confirm we have the correct credentials
 
-**Solution**:
-1. Verify Client ID and Secret in IdP
-2. Ensure secret hasn't expired (regenerate if needed)
-3. Contact USAi team to update credentials in Keycloak
+### Users Can Sign In But Their Profile Is Incomplete
 
-#### Users can authenticate but profile is incomplete
+**What it means:** Your identity provider isn't sending all the required information (name, email, etc.).
 
-**Cause**: Missing or incorrect attribute mapping
+**How to fix it:**
+1. Verify your token or claims configuration includes `email`, `given_name`, and `family_name`
+2. For Entra ID: check the optional claims in **Token configuration**
+3. For Okta: check attribute statements in your app configuration
+4. Contact us if the issue persists — we can check the data we're receiving
 
-**Solution**:
-1. Verify IdP is sending required claims in ID token
-2. Check token configuration in IdP includes email, name claims
-3. Contact USAi team to verify mapper configuration in Keycloak
+### "Invalid SAML Response" Error (SAML Only)
 
-### Common SAML Issues
+**What it means:** The SAML assertion failed validation.
 
-#### "Invalid SAML Response" error
+**How to fix it:**
+1. Ensure your server's clock is synchronized (SAML assertions are time-sensitive)
+2. Check whether your signing certificate has expired
+3. Contact us — we can check the signature validation on our side
 
-**Cause**: Signature validation failure or expired assertion
+### Logout Doesn't Work Properly
 
-**Solution**:
-1. Verify system clocks are synchronized (NTP)
-2. Check certificate hasn't expired
-3. Ensure SAML response is signed correctly
-4. Contact USAi team to verify certificate in Keycloak
+**What it means:** Signing out of USAi doesn't sign you out of your identity provider (or vice versa).
 
-#### "NameID not found" error
+**How to fix it:**
+1. Verify that logout URLs are configured in your app registration
+2. Contact us to confirm Single Logout is enabled on our side
 
-**Cause**: NameID format mismatch
+### SCIM: Provisioning Fails With Authentication Error
 
-**Solution**:
-1. Verify NameID format in IdP matches Keycloak expectation
-2. Common formats: Email, Persistent, Transient
-3. Contact USAi team to align configuration
+**What it means:** The bearer token may be invalid or expired.
 
-#### Logout doesn't work properly
+**How to fix it:**
+1. Contact us to request a new bearer token
+2. Update the token in your identity provider's provisioning configuration
+3. Click **Test Connection** again to verify
 
-**Cause**: Single Logout Service (SLS) not configured
+### SCIM: Users Are Not Deprovisioned As Expected
 
-**Solution**:
-1. Verify SLS URL is configured in both IdP and Keycloak
-2. Ensure logout requests are signed if required
-3. Test logout from both USAi and IdP sides
+**What it means:** The user may not be in provisioning scope, deprovisioning may not be enabled, or the configured deprovisioning behavior may not match what you expected.
 
-### Common SCIM Issues
+**How to fix it:**
+1. In your IdP, verify that the user was managed by the USAi provisioning application
+2. Verify that **Update** is enabled if you expect `active = false` soft deactivation
+3. Check your provisioning logs for failed or skipped operations
+4. Contact us if the issue appears to be on our side
 
-#### Provisioning sync fails with authentication error
+### Common SCIM Error Codes
 
-**Cause**: Invalid or expired bearer token
-
-**Solution**:
-1. Contact USAi team to generate new bearer token
-2. Update token in IdP provisioning configuration
-3. Test connection after updating
-
-#### Users provisioned but attributes are missing
-
-**Cause**: Incorrect attribute mapping
-
-**Solution**:
-1. Review attribute mappings in IdP
-2. Verify source attributes exist in IdP user profiles
-3. Check SCIM logs for specific errors
-4. Contact USAi team to verify Keycloak SCIM mapper configuration
-
-#### Users not deprovisioning when removed from IdP
-
-**Cause**: Deprovisioning not enabled or SCIM sync issue
-
-**Solution**:
-1. Verify deprovisioning is enabled in IdP
-2. Check SCIM logs for failed delete/deactivate operations
-3. Manually test with SCIM API to isolate issue
-4. Contact USAi team if Keycloak-side issue suspected
-
-### Getting Help
-
-If you encounter issues not covered in this guide:
-
-1. **Check logs**: Review authentication logs in your IdP
-2. **Test connectivity**: Ensure firewall rules allow communication
-3. **Gather details**: 
-   - Error messages (screenshots or text)
-   - Timestamp of the issue
-   - User ID or email affected
-   - Steps to reproduce
-4. **Contact USAi Support**:
-   - Email: partnerships@usai.gov
-   - Include: Agency name, environment (test/prod), issue details
-   - Response time: Within 1 business day
-
-## Additional Resources
-
-- [USAi Onboarding Guide](./README.md)
-- [SCIM Testing Guide](./SCIM-TESTING-GUIDE.md)
-- [Keycloak Documentation](https://www.keycloak.org/documentation)
-- [OIDC Specification](https://openid.net/connect/)
-- [SAML 2.0 Specification](http://docs.oasis-open.org/security/saml/Post2.0/sstc-saml-tech-overview-2.0.html)
-- [SCIM 2.0 Specification](https://tools.ietf.org/html/rfc7644)
-
-## Appendix: Configuration Templates
-
-### Microsoft Entra ID Streamlined Setup
-
-For agencies using Microsoft Entra ID, USAi can automatically configure the integration on our side once you provide your credentials.
-
-#### How It Works
-```yaml
-# What your agency creates in your Entra tenant
-Application Registration:
-  - Name: USAi - [Your Agency Name]
-  - Redirect URI: https://auth.usai.gov/realms/your-realm/broker/oidc/endpoint
-  - Client Type: Web
-  - Client Secret: Generated by your admin
-  - Token Claims: email, given_name, family_name, upn
-  - API Permissions: User.Read, openid, profile, email
-  - Admin Consent: Granted
-
-# What you provide to USAi
-Required Information:
-  - Tenant ID: 12345678-1234-1234-1234-123456789abc
-  - Client ID: (from your app registration)
-  - Client Secret: (from your app registration)
-  - Agency Name: Your Agency Name
-
-# What USAi automatically configures
-Keycloak Identity Provider:
-  - Provider Type: OIDC
-  - Authorization URL: https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize
-  - Token URL: https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token
-  - JWKS URL: https://login.microsoftonline.com/{tenant}/discovery/v2.0/keys
-  - Client credentials securely stored
-  - Attribute mappers configured:
-    * email → email
-    * given_name → firstName
-    * family_name → lastName
-    * upn → username
-  - User session settings
-  - Trust email verification
-  - Sync mode configuration
-```
-
-#### Benefits of Streamlined Setup
-- ✅ You maintain full control of your Entra tenant
-- ✅ Consistent configuration across all agencies
-- ✅ Faster setup (typically completed within 1 business day)
-- ✅ Reduced coordination time
-- ✅ Automatic OIDC endpoint configuration
-- ✅ Standardized attribute mapping
-- ✅ Less room for configuration errors
+| Error | What It Means | What To Do |
+|-------|--------------|------------|
+| `401 Unauthorized` | Invalid or expired token | Request a new token from us |
+| `409 Conflict` | User already exists | Check for duplicate emails or usernames |
+| `400 Bad Request` | Attribute format issue | Verify your attribute mappings |
+| `404 Not Found` | User/group doesn't exist | Ensure the initial sync completed |
+| `429 Too Many Requests` | Rate limiting triggered | Reduce sync frequency or batch size |
 
 ---
 
-### Azure AD OIDC Quick Reference (Manual Setup)
+## Getting Help
 
-```yaml
-# Application Registration
-Client Type: Web
-Redirect URI: https://auth.usai.gov/realms/your-realm/broker/oidc/endpoint
+If you run into anything not covered here, we're happy to help.
 
-# Endpoints (replace {tenant} with your tenant ID)
-Authorization: https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize
-Token: https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token
-JWKS: https://login.microsoftonline.com/{tenant}/discovery/v2.0/keys
-Issuer: https://login.microsoftonline.com/{tenant}/v2.0
+**Before reaching out, please gather:**
+- Error messages (screenshots or text)
+- Timestamp of when the issue occurred
+- Affected user's email address
+- Steps to reproduce the issue
 
-# Token Claims
-email: email
-given_name: given_name  
-family_name: family_name
-```
-
-### Okta OIDC Quick Reference
-
-```yaml
-# Application Settings
-Application Type: Web Application
-Grant Types: Authorization Code
-
-# Endpoints (replace {org} with your Okta domain)
-Authorization: https://{org}.okta.com/oauth2/default/v1/authorize
-Token: https://{org}.okta.com/oauth2/default/v1/token
-UserInfo: https://{org}.okta.com/oauth2/default/v1/userinfo
-JWKS: https://{org}.okta.com/oauth2/default/v1/keys
-Issuer: https://{org}.okta.com/oauth2/default
-
-# Token Claims (default)
-email: email
-given_name: given_name
-family_name: family_name
-```
-
-### SCIM Endpoint Reference
-
-```yaml
-# Base URL
-Base: https://auth.usai.gov/realms/your-realm/scim/v2
-
-# Endpoints
-Service Provider Config: /ServiceProviderConfig
-Resource Types: /ResourceTypes
-Schemas: /Schemas
-Users: /Users
-Groups: /Groups
-
-# Authentication
-Method: Bearer Token
-Header: Authorization: Bearer {token}
-
-# Content Type
-Request: application/scim+json
-Response: application/scim+json
-```
+**Contact us:**
+- 📧 **Email**: partnerships@usai.gov
+- Include: Your agency name, environment (test or production), and issue details
+- **Response time**: Within 1 business day
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: November 10, 2025  
+## Quick Reference
+
+### OIDC Redirect URI
+```
+https://auth.usai.gov/realms/your-realm/broker/oidc/endpoint
+```
+
+### SAML ACS URL
+```
+https://auth.usai.gov/realms/your-realm/broker/saml/endpoint
+```
+
+### SAML Entity ID
+```
+https://auth.usai.gov/realms/your-realm
+```
+
+### SCIM Base URL
+```
+https://auth.usai.gov/realms/your-realm/scim/v2
+```
+
+> ⚠️ In all URLs above, replace `your-realm` with the realm name provided by the USAi team.
+
+---
+
+**Document Version**: 1.1
+**Last Updated**: February 9, 2026
 **Maintained By**: USAi Partnerships Team (partnerships@usai.gov)
