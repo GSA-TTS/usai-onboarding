@@ -544,11 +544,13 @@ def token_usage(bucket, event):
 
 The helper above handles both formats, so you can deploy it before cutover.
 
-**IAM note:** if your read policy was scoped to the dated
-`{YEAR}/{MONTH}/{DAY}/*` prefix, it will not cover `chat/*` and `api/*`. Request an
-updated policy from [usai-security@gsa.gov](mailto:usai-security@gsa.gov) before
-cutover. Whether the context-history documents land in the same bucket is one of
-the [open questions](raw-vs-redacted-logs.md#open-questions).
+**Bucket and IAM note:** the context-history documents are written to the **same
+bucket** you read today — no new bucket is provisioned, so the `BUCKET_NAME` in
+your existing configuration stays correct. Only the key prefix differs. If your
+read policy grants bucket-wide `s3:GetObject`, no change is needed. If it was
+scoped narrowly to the dated `{YEAR}/{MONTH}/{DAY}/*` prefix, it will not cover
+`chat/*` and `api/*` — request an updated policy from
+[usai-security@gsa.gov](mailto:usai-security@gsa.gov) before cutover.
 
 ### Processing Log Files
 
