@@ -45,20 +45,32 @@ USAi currently has the following models available (or coming soon!) with current
 
 Model Name | Vendor | Price per 1M input tokens  | Price per 1M output tokens
 --- | --- | --- | --- | 
+Gemini 2 Flash | Google | $0.15 | $0.60
 Gemini 2.5 Pro | Google | $1.25 | $10.00 
 Gemini 2.5 Flash | Google | $0.30 | $2.50
+Gemini 2.5 Flash Lite | Google | $0.10 | $0.10
+Gemini 3.5 Flash | Google | $1.50 | $9.00
+Gemini 3.7 Flash | Google | $0.75 | $3.75
 GPT 5.2 | OpenAI | $1.75 | $14.00
 GPT 5.4 | OpenAI | $2.50 | $15.00
 GPT 5.5 | OpenAI | $5.00 | $30.00
-Grok 4 | xAI | $5.50 | $27.50
+Grok 4 | xAI | $3.00 | $15.00
+Grok 4.3 | xAI | $5.50 | $27.50
 Haiku 3.5 | Anthropic | $0.80 | $4.00
 Haiku 4.5 | Anthropic | $1.10 | $5.50
+Llama 3.2 11B | Meta | $0.16 | $0.16
 Llama 4 Maverick | Meta | $0.24 | $0.97
+Opus 4 | Anthropic | $15.00 | $75.00
 Opus 4.5 | Anthropic | $5.00 | $25.00
 Opus 4.7 | Anthropic | $5.50 | $27.50
 Opus 4.8 | Anthropic | $5.50 | $27.50
+Opus 5 | Anthropic | $5.00 | $25.00
+Sonnet 3.5 | Anthropic | $3.00 | $15.00
+Sonnet 3.7 | Anthropic | $3.00 | $15.00
+Sonnet 4 | Anthropic | $3.00 | $15.00
 Sonnet 4.5 | Anthropic | $3.00 | $15.00
 Sonnet 4.6 | Anthropic | $3.30 | $16.50
+Sonnet 5 | Anthropic | $2.00 | $10.00
 
 
 ### System prompts
