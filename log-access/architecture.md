@@ -259,8 +259,8 @@ usai-${TENANT_CODE}-core-production-sec-auditlogs-dlq
 **Purpose:** Provide secure access for tenant administrators
 
 **Permissions:**
-- **SQS:** `ReceiveMessage`, `DeleteMessage`, `GetQueueAttributes`
-- **S3:** `GetObject`, `ListBucket`
+- **SQS:** `ReceiveMessage`, `DeleteMessage`, `GetQueueAttributes`, `GetQueueUrl`, `ChangeMessageVisibility`
+- **S3:** `GetObject`, `GetObjectVersion`, `ListBucket`, `GetBucketLocation`
 - **KMS:** `Decrypt` (if encrypted)
 
 **Trust Policy:**
