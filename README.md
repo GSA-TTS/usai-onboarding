@@ -54,8 +54,15 @@ Gemini 3.7 Flash | Google | $0.75 | $3.75
 GPT 5.2 | OpenAI | $1.75 | $14.00
 GPT 5.4 | OpenAI | $2.50 | $15.00
 GPT 5.5 | OpenAI | $5.00 | $30.00
+GPT 5.6 Sol (short context) | OpenAI| $5.50 | $33.00
+GPT 5.6 Sol (long context) | OpenAI | $11.00 | $49.50
+GPT 5.6 Terra (short context) | OpenAI | $4.40 | $26.40
+GPT 5.6 Terra (long context) | OpenAI | $4.40 | $19.80
+GPT 5.6 Luna (short context) | OpenAI | $0.22 | $1.32
+GPT 5.6 Luna (long context) | OpenAI | $0.44 | $1.98
 Grok 4 | xAI | $3.00 | $15.00
 Grok 4.3 | xAI | $5.50 | $27.50
+Grok 4.6 | xAI | $2.20 | $6.60
 Haiku 3.5 | Anthropic | $0.80 | $4.00
 Haiku 4.5 | Anthropic | $1.10 | $5.50
 Llama 3.2 11B | Meta | $0.16 | $0.16
@@ -72,6 +79,7 @@ Sonnet 4.5 | Anthropic | $3.00 | $15.00
 Sonnet 4.6 | Anthropic | $3.30 | $16.50
 Sonnet 5 | Anthropic | $2.00 | $10.00
 
+*Short context is optimized for smaller requests, while long context supports larger inputs and more complex workflows.
 
 ### System prompts
 
