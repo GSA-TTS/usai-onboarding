@@ -51,6 +51,7 @@ Gemini 2.5 Flash | Google | $0.30 | $2.50
 Gemini 2.5 Flash Lite | Google | $0.10 | $0.10
 Gemini 3.5 Flash | Google | $1.50 | $9.00
 Gemini 3.7 Flash | Google | $0.75 | $3.75
+Gemini 3.8 Flash | Google | $0.75 | $3.75
 GPT 5.2 | OpenAI | $1.75 | $14.00
 GPT 5.4 | OpenAI | $2.50 | $15.00
 GPT 5.5 | OpenAI | $5.00 | $30.00
