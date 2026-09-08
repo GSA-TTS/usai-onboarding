@@ -55,6 +55,7 @@ Sonnet 4.6 | Anthropic | $3.00 | $15.00
 Sonnet 4.5 | Anthropic | $3.00 | $15.00
 Sonnet 4 | Anthropic | $3.00 | $15.00
 Haiku 4.5 | Anthropic | $1.00 | $5.00
+Gemini 3.8 Flash | Google | $0.75 | $3.75
 Gemini 3.7 Flash | Google | $0.75 | $3.75 
 Gemini 3.5 Flash | Google | $1.50 | $9.00
 Gemini 2.5 Pro | Google | $1.25 | $10.00
