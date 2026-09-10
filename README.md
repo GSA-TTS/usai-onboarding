@@ -63,6 +63,8 @@ Gemini 2.5 Flash | Google | $0.30 | $2.50
 Gemini 2.5 Flash Lite | Google | $0.10 | $0.40
 Llama 4 Maverick | Meta | $0.24 | $0.97
 Llama 3.2 11B | Meta | $0.16 | $0.16
+GPT 6 Astra (short context) | OpenAI| $11.00 | $55.00
+GPT 6 Astra (long context) | OpenAI | $22.00 | $82.50
 GPT 5.6 Sol (short context) | OpenAI| $4.00 | $20.00
 GPT 5.6 Sol (long context) | OpenAI | $8.00 | $30.00
 GPT 5.6 Terra (short context) | OpenAI | $2.00 | $12.00
