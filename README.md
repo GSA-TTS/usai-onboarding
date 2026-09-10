@@ -41,7 +41,7 @@ To ensure we open up the firewall to the right egress IP addresses for your agen
 - **Note:** it usually takes the GSA team 7 days to make the firewall updates, so this item is a little time-sensitive.
 
 ### Models to deploy
-USAi currently has the following models available (or coming soon!) with current costs shown. If you would like to disable any models, please let us know at partnerships@usai.gov.
+USAi currently has the following models available (or coming soon!) with current costs shown.
 
 Model Name | Vendor | Price per 1M input tokens  | Price per 1M output tokens
 --- | --- | --- | --- | 
@@ -87,7 +87,7 @@ Grok 4.2 (long context) | xAI | $2.50 | $5.00
 
 ### System prompts
 
-You will have the ability to modify the USAi Chat’s system prompts to improve behavior, security, performance, and alignment with Federal AI requirements. [GSA's current system prompts](https://github.com/GSA-TTS/usai-onboarding/raw/main/USAi%20Chat%20_%20System%20Prompts.docx) are attached as a reference. Please send a word document tailored to your agency’s needs to partnerships@usai.gov. Some notes to consider:
+You will have the ability to modify the USAi Chat’s system prompts to improve behavior, security, performance, and alignment with Federal AI requirements. [GSA's current system prompts](https://github.com/GSA-TTS/usai-onboarding/raw/main/USAi%20Chat%20_%20System%20Prompts.docx) are attached as a reference. Some notes to consider:
 
 - We've seen these increase GSA's LLM safeguards from approximately 78% to 90%.
 - To ensure optimal performance and manage costs, it is critical to keep system prompts clear and concise. Overly complex, restrictive, or lengthy prompts can degrade performance and increase operational expenses.
