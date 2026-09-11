@@ -211,6 +211,13 @@ aws s3 cp \
   --region {REGION}
 ```
 
+**⚠️ Objects must carry a `tenant-id` tag.** Your credentials can read an object only
+when it is tagged `tenant-id = usai-{TENANT}`; the permission is conditioned on that
+tag, not just on the bucket. Files written by the platform carry it automatically, so
+this normally just works — but if a download fails with `Access Denied` while the
+listing succeeds, an untagged object is the most likely cause. Report it rather than
+retrying; it means something wrote a log without the tag.
+
 ### Step 4: Delete the SQS Message
 
 After successfully downloading:
@@ -263,6 +270,10 @@ if STREAM not in VALID_STREAMS:
 # Constructed from above (usually don't need to change).
 # Buckets and queues include "-core-"; the IAM user name does not.
 QUEUE_NAME = f"usai-{TENANT}-core-production-{STREAM}-queue"
+# The dead-letter queue for this stream. Not polled by this script -- it holds
+# messages that failed processing three times, and reading it is a deliberate
+# operator action. Your credentials permit it, but the queue may additionally carry
+# its own resource policy, so contact the infrastructure team if access is refused.
 DLQ_NAME = f"usai-{TENANT}-core-production-{STREAM}-dlq"
 BUCKET_NAME = f"usai-{TENANT}-core-production-{STREAM}"
 DOWNLOAD_DIR = "./downloaded-logs"
@@ -642,12 +653,25 @@ aws sts get-caller-identity
 
 ### Issue: "Access Denied" when downloading from S3
 
-**Cause:** Your IAM credentials don't have S3 read permissions
+**Cause:** one of four things, in the order worth checking:
 
-**Solution:**
-1. Ask infrastructure team to verify your IAM role has `s3:GetObject` permission
-2. Verify the bucket policy allows your role
-3. Check if IP allowlists are blocking your IP address
+1. **The object is missing its `tenant-id` tag.** Read access is conditioned on
+   `tenant-id = usai-{TENANT}`, so an untagged object is unreadable even though the
+   bucket and your credentials are correct. Listing still works, which is what makes
+   this confusing.
+2. **Your IP is not allowlisted.** The buckets sit behind an IP perimeter. If your
+   egress address changed — new VPN, new NAT, new office — the same credentials that
+   worked yesterday will be denied today.
+3. **The object is encrypted with a key you were not granted.** Your credentials
+   include `kms:Decrypt` for the queue key and any key you were told about. An object
+   encrypted with a different customer-managed key fails here, and the error names
+   `GetObject` rather than KMS.
+4. **You are using the wrong stream's credentials.** Each stream has its own key pair
+   and they are not interchangeable.
+
+**Solution:** for 1 and 3, contact the infrastructure team with the exact object key —
+neither is fixable from your side. For 2, send your current egress CIDR so it can be
+added. For 4, re-check which key pair you loaded.
 
 ```bash
 # Test S3 access
