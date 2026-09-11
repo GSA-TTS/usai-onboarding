@@ -8,7 +8,20 @@
 
 Your USAI tenant has analytics logs automatically delivered to S3 via AWS Kinesis Firehose. When new log files are created, notifications are sent to an SQS queue. You can poll this queue to discover new files and download them for analysis.
 
-**⚠️ Important:** You have TWO bucket options - **RAW** (full conversation content) or **REDACTED** (PII masked). See [raw-vs-redacted-logs.md](raw-vs-redacted-logs.md) to choose which is right for you. Most users should start with **REDACTED**.
+**⚠️ Important:** Your tenant has **three** log streams, and you will be granted access to
+whichever ones you need:
+
+| Stream | Contents | Start here? |
+|--------|----------|-------------|
+| `interaction-redacted` | Interaction logs with PII masked | ✅ Most users |
+| `interaction-raw` | Interaction logs, full conversation content | Only if you need unmasked text |
+| `sec-auditlogs` | Security and audit events (authentication, admin actions) | Compliance / SIEM use |
+
+See [raw-vs-redacted-logs.md](raw-vs-redacted-logs.md) to choose between raw and redacted.
+
+Each stream has its own bucket, its own queue, its own dead-letter queue and its own set of
+credentials — they are not interchangeable, so use the names for the stream you were
+granted.
 
 **Architecture:**
 ```
@@ -29,6 +42,8 @@ Contact your infrastructure team to obtain:
 
 - **AWS Account ID** - Your tenant's AWS account number
 - **Tenant Code** - Your identifier (e.g., "gsa", "ed", "hhs")
+- **Stream(s)** - Which of `interaction-raw`, `interaction-redacted`, `sec-auditlogs`
+  you have been granted. Every resource name below is built from this.
 - **IAM Role ARN** - Role you'll assume to access logs
 - **SQS Queue URL** - Queue to poll for notifications
 - **S3 Bucket Name** - Bucket containing your log files
@@ -69,29 +84,52 @@ pip install boto3
 
 ## Resource Naming Pattern
 
-Your resources follow this pattern:
+Every name is built from your tenant code and one **stream name**. The three stream names are:
 
-| Resource | Pattern | Example |
-|----------|---------|---------|
-| SQS Queue (RAW) | `usai-{TENANT}-core-production-interaction-raw-queue` | `usai-example-core-production-interaction-raw-queue` |
-| SQS Queue (REDACTED) | `usai-{TENANT}-core-production-interaction-redacted-queue` | `usai-example-core-production-interaction-redacted-queue` |
-| S3 Bucket (RAW) | `usai-{TENANT}-core-production-interaction-raw` | `usai-example-core-production-interaction-raw` |
-| S3 Bucket (REDACTED) | `usai-{TENANT}-core-production-interaction-redacted` | `usai-example-core-production-interaction-redacted` |
-| IAM User (RAW) | `usai-{TENANT}-production-interaction-raw-reader-user` | `usai-example-production-interaction-raw-reader-user` |
-| IAM User (REDACTED) | `usai-{TENANT}-production-interaction-redacted-reader-user` | `usai-example-production-interaction-redacted-reader-user` |
+```
+interaction-raw
+interaction-redacted
+sec-auditlogs
+```
 
-**Note:** Replace `{TENANT}` with your tenant code. You'll be given access to either RAW or REDACTED resources based on your needs.
+Substitute one of those for `{STREAM}` below.
+
+| Resource | Pattern | Example (`interaction-redacted`) |
+|----------|---------|----------------------------------|
+| S3 Bucket | `usai-{TENANT}-core-production-{STREAM}` | `usai-example-core-production-interaction-redacted` |
+| SQS Queue | `usai-{TENANT}-core-production-{STREAM}-queue` | `usai-example-core-production-interaction-redacted-queue` |
+| SQS Dead-Letter Queue | `usai-{TENANT}-core-production-{STREAM}-dlq` | `usai-example-core-production-interaction-redacted-dlq` |
+| IAM User | `usai-{TENANT}-production-{STREAM}-reader-user` | `usai-example-production-interaction-redacted-reader-user` |
+
+**Two things to watch:**
+
+1. **Buckets and queues contain `-core-`; IAM user names do not.** This is not a typo in this
+   document — the live resources really are named that way. `usai-gsa-core-production-interaction-raw`
+   but `usai-gsa-production-interaction-raw-reader-user`.
+2. **`sec-auditlogs` has no `interaction-` prefix.** The audit queue is
+   `usai-{TENANT}-core-production-sec-auditlogs-queue`, *not*
+   `...-interaction-sec-auditlogs-queue`. If you are building names by string
+   concatenation, treat the whole stream name as one unit rather than assuming an
+   `interaction-` prefix.
+
+**Note:** Replace `{TENANT}` with your tenant code (e.g. `gsa`, `ed`, `hhs`). You will be
+given credentials per stream, for whichever streams you need.
 
 ## Access Methods
 
 ### Method 1: IAM User with Access Keys (Standard)
 
-Your infrastructure team has created an IAM user for log access:
-- **User Name (RAW):** `usai-{TENANT}-production-interaction-raw-reader-user`
-- **User Name (REDACTED):** `usai-{TENANT}-production-interaction-redacted-reader-user`
-- **Example:** `usai-gsa-production-interaction-raw-reader-user` or `usai-gsa-production-interaction-redacted-reader-user`
+Your infrastructure team has created **one IAM user per stream** you were granted:
 
-**Note:** You'll receive credentials for either RAW or REDACTED based on your chosen bucket type.
+- `usai-{TENANT}-production-interaction-raw-reader-user`
+- `usai-{TENANT}-production-interaction-redacted-reader-user`
+- `usai-{TENANT}-production-sec-auditlogs-reader-user`
+
+Example: `usai-gsa-production-interaction-redacted-reader-user`
+
+**Note:** You will receive a separate key pair for each stream you are granted. Use the key
+pair issued for the stream you are reading. Remember these names have no `-core-`, unlike the
+bucket and queue names.
 
 **Get Access Keys from Infrastructure Team:**
 
@@ -129,7 +167,9 @@ aws sts get-caller-identity
 
 ```bash
 # macOS/Linux: Set your queue URL (get from infrastructure team)
-QUEUE_URL="https://sqs.{REGION}.amazonaws.com/{ACCOUNT_ID}/usai-{TENANT}-core-production-interaction-raw-queue"
+# STREAM is one of: interaction-raw | interaction-redacted | sec-auditlogs
+STREAM="interaction-redacted"
+QUEUE_URL="https://sqs.{REGION}.amazonaws.com/{ACCOUNT_ID}/usai-{TENANT}-core-production-${STREAM}-queue"
 
 # Poll the queue
 aws sqs receive-message \
@@ -166,10 +206,17 @@ Extract the S3 bucket and key from the nested JSON.
 ```bash
 # Download from S3
 aws s3 cp \
-  s3://usai-{TENANT}-core-production-interaction-raw/2026/01/28/file.json \
+  s3://usai-{TENANT}-core-production-${STREAM}/2026/01/28/file.json \
   ./downloaded-logs/ \
   --region {REGION}
 ```
+
+**⚠️ Objects must carry a `tenant-id` tag.** Your credentials can read an object only
+when it is tagged `tenant-id = usai-{TENANT}`; the permission is conditioned on that
+tag, not just on the bucket. Files written by the platform carry it automatically, so
+this normally just works — but if a download fails with `Access Denied` while the
+listing succeeds, an untagged object is the most likely cause. Report it rather than
+retrying; it means something wrote a log without the tag.
 
 ### Step 4: Delete the SQS Message
 
@@ -210,11 +257,25 @@ from datetime import datetime
 TENANT = "example"  # CHANGE THIS: Your tenant code (e.g., gsa, ed, hhs)
 AWS_REGION = "us-east-1"  # CHANGE THIS: Your AWS region
 AWS_ACCOUNT_ID = "123456789012"  # CHANGE THIS: Your AWS account ID
-LOG_TYPE = "raw"  # CHANGE THIS: "raw" or "redacted" (see raw-vs-redacted-logs.md)
 
-# Constructed from above (usually don't need to change)
-QUEUE_NAME = f"usai-{TENANT}-core-production-interaction-{LOG_TYPE}-queue"
-BUCKET_NAME = f"usai-{TENANT}-core-production-interaction-{LOG_TYPE}"
+# CHANGE THIS: which stream to consume. Must be one of the three below, spelled in
+# full. Note that "sec-auditlogs" has no "interaction-" prefix, which is why this is
+# one whole name rather than a suffix pasted onto "interaction-".
+STREAM = "interaction-redacted"  # "interaction-raw" | "interaction-redacted" | "sec-auditlogs"
+
+VALID_STREAMS = ("interaction-raw", "interaction-redacted", "sec-auditlogs")
+if STREAM not in VALID_STREAMS:
+    raise SystemExit(f"STREAM must be one of {VALID_STREAMS}, got {STREAM!r}")
+
+# Constructed from above (usually don't need to change).
+# Buckets and queues include "-core-"; the IAM user name does not.
+QUEUE_NAME = f"usai-{TENANT}-core-production-{STREAM}-queue"
+# The dead-letter queue for this stream. Not polled by this script -- it holds
+# messages that failed processing three times, and reading it is a deliberate
+# operator action. Your credentials permit it, but the queue may additionally carry
+# its own resource policy, so contact the infrastructure team if access is refused.
+DLQ_NAME = f"usai-{TENANT}-core-production-{STREAM}-dlq"
+BUCKET_NAME = f"usai-{TENANT}-core-production-{STREAM}"
 DOWNLOAD_DIR = "./downloaded-logs"
 # =======================================================
 
@@ -379,7 +440,10 @@ if __name__ == "__main__":
 TENANT = "your-tenant-code"  # e.g., "gsa", "ed", "hhs"
 AWS_REGION = "us-east-1"     # Your AWS region
 AWS_ACCOUNT_ID = "123456789012"  # Your AWS account ID
-LOG_TYPE = "raw"  # "raw" or "redacted" - see raw-vs-redacted-logs.md
+
+# One of: "interaction-raw", "interaction-redacted", "sec-auditlogs"
+# See raw-vs-redacted-logs.md to choose between raw and redacted.
+STREAM = "interaction-redacted"
 ```
 
 ### Run the Consumer
@@ -589,16 +653,29 @@ aws sts get-caller-identity
 
 ### Issue: "Access Denied" when downloading from S3
 
-**Cause:** Your IAM credentials don't have S3 read permissions
+**Cause:** one of four things, in the order worth checking:
 
-**Solution:**
-1. Ask infrastructure team to verify your IAM role has `s3:GetObject` permission
-2. Verify the bucket policy allows your role
-3. Check if IP allowlists are blocking your IP address
+1. **The object is missing its `tenant-id` tag.** Read access is conditioned on
+   `tenant-id = usai-{TENANT}`, so an untagged object is unreadable even though the
+   bucket and your credentials are correct. Listing still works, which is what makes
+   this confusing.
+2. **Your IP is not allowlisted.** The buckets sit behind an IP perimeter. If your
+   egress address changed — new VPN, new NAT, new office — the same credentials that
+   worked yesterday will be denied today.
+3. **The object is encrypted with a key you were not granted.** Your credentials
+   include `kms:Decrypt` for the queue key and any key you were told about. An object
+   encrypted with a different customer-managed key fails here, and the error names
+   `GetObject` rather than KMS.
+4. **You are using the wrong stream's credentials.** Each stream has its own key pair
+   and they are not interchangeable.
+
+**Solution:** for 1 and 3, contact the infrastructure team with the exact object key —
+neither is fixable from your side. For 2, send your current egress CIDR so it can be
+added. For 4, re-check which key pair you loaded.
 
 ```bash
 # Test S3 access
-aws s3 ls s3://usai-{TENANT}-core-production-interaction-raw/
+aws s3 ls s3://usai-{TENANT}-core-production-${STREAM}/
 ```
 
 ### Issue: Queue is empty but logs should exist
@@ -614,7 +691,7 @@ aws s3 ls s3://usai-{TENANT}-core-production-interaction-raw/
 
 ```bash
 # List recent files in S3
-aws s3 ls s3://usai-{TENANT}-core-production-interaction-raw/2026/01/28/ --recursive
+aws s3 ls s3://usai-{TENANT}-core-production-${STREAM}/2026/01/28/ --recursive
 ```
 
 ### Issue: Invalid credentials
