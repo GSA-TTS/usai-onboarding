@@ -43,45 +43,45 @@ To ensure we open up the firewall to the right egress IP addresses for your agen
 ### Models to deploy
 USAi currently has the following models available (or coming soon!) with current costs shown. If you would like to disable any models, please let us know at partnerships@usai.gov.
 
-Model Name | Vendor | Price per 1M input tokens  | Price per 1M output tokens
---- | --- | --- | --- | 
-Opus 5 | Anthropic | $5.00 | $25.00
-Opus 4.8 | Anthropic | $5.00 | $25.00
-Opus 4.7 | Anthropic | $5.00 | $25.00
-Opus 4.5 | Anthropic | $5.00 | $25.00
-Opus 4 | Anthropic | $15.00 | $75.00
-Sonnet 5 | Anthropic | $2.00 | $10.00
-Sonnet 4.6 | Anthropic | $3.00 | $15.00
-Sonnet 4.5 | Anthropic | $3.00 | $15.00
+Model Name | Vendor | Price per 1M input tokens | Price per 1M output tokens
+--- | --- | --- | ---
+Opus 5 | Anthropic | $5.50 | $27.50
+Opus 4.8 | Anthropic | $5.50 | $27.50
+Opus 4.7 | Anthropic | $5.50 | $27.50
+Opus 4.5 | Anthropic | $5.50 | $27.50
+Opus 4 | Anthropic | N/A | N/A
+Sonnet 5 | Anthropic | $2.20 | $11.00
+Sonnet 4.6 | Anthropic | $3.30 | $16.50
+Sonnet 4.5 | Anthropic | $3.30 | $16.50
 Sonnet 4 | Anthropic | $3.00 | $15.00
-Haiku 4.5 | Anthropic | $1.00 | $5.00
-Gemini 3.8 Flash | Google | $0.75 | $3.75
-Gemini 3.7 Flash | Google | $0.75 | $3.75 
-Gemini 3.5 Flash | Google | $1.50 | $9.00
+Haiku 4.5 | Anthropic | $1.10 | $5.50
+Gemini 3.8 Flash | Google | $0.83 | $4.13
+Gemini 3.7 Flash | Google | $0.83 | $4.13
+Gemini 3.5 Flash | Google | $1.65 | $9.90
 Gemini 2.5 Pro | Google | $1.25 | $10.00
 Gemini 2.5 Flash | Google | $0.30 | $2.50
 Gemini 2.5 Flash Lite | Google | $0.10 | $0.40
 Llama 4 Maverick | Meta | $0.24 | $0.97
-Llama 3.2 11B | Meta | $0.16 | $0.16
-GPT 6 Astra (short context) | OpenAI| $11.00 | $55.00
+Llama 3.2 11B | Meta | N/A | N/A
+GPT 6 Astra (short context) | OpenAI | $11.00 | $55.00
 GPT 6 Astra (long context) | OpenAI | $22.00 | $82.50
-GPT 5.6 Sol (short context) | OpenAI| $4.00 | $20.00
-GPT 5.6 Sol (long context) | OpenAI | $8.00 | $30.00
-GPT 5.6 Terra (short context) | OpenAI | $2.00 | $12.00
-GPT 5.6 Terra (long context) | OpenAI | $4.00 | $18.00
-GPT 5.6 Luna (short context) | OpenAI | $0.20 | $1.20
-GPT 5.6 Luna (long context) | OpenAI | $0.40 | $1.80
-GPT 5.5 (short context) | OpenAI | $5.00 | $30.00
-GPT 5.5 (long context) | OpenAI | $10.00 | $45.00
-GPT 5.4 (short context) | OpenAI | $2.50 | $15.00
-GPT 5.4 (long context)| OpenAI | $5.00 | $22.50
-GPT 5.2 | OpenAI | $1.75 | $14.00
-Grok 4.6 (short context)| xAI | $2.00 | $6.00
-Grok 4.6 (long context)| xAI | $4.00 | $12.00
-Grok 4.3 (short context)| xAI | $1.25 | $2.50
-Grok 4.3 (long context)| xAI | $2.50 | $5.00
-Grok 4.2 (short context) | xAI | $1.25 | $2.50
-Grok 4.2 (long context) | xAI | $2.50 | $5.00
+GPT 5.6 Sol (short context) | OpenAI | $4.40 | $22.00
+GPT 5.6 Sol (long context) | OpenAI | $8.80 | $33.00
+GPT 5.6 Terra (short context) | OpenAI | $2.20 | $13.20
+GPT 5.6 Terra (long context) | OpenAI | $4.40 | $19.80
+GPT 5.6 Luna (short context) | OpenAI | $0.22 | $1.32
+GPT 5.6 Luna (long context) | OpenAI | $0.44 | $1.98
+GPT 5.5 (short context) | OpenAI | $5.50 | $33.00
+GPT 5.5 (long context) | OpenAI | $11.00 | $49.50
+GPT 5.4 (short context) | OpenAI | $2.75 | $16.50
+GPT 5.4 (long context) | OpenAI | $5.50 | $24.75
+GPT 5.2 | OpenAI | $1.93 | $15.40
+Grok 4.6 (short context) | xAI | $2.20 | $6.60
+Grok 4.6 (long context) | xAI | $2.20 | $6.60
+Grok 4.3 (short context) | xAI | $1.38 | $2.75
+Grok 4.3 (long context) | xAI | $1.38 | $2.75
+Grok 4.2 (short context) | xAI | $1.38 | $2.75
+Grok 4.2 (long context) | xAI | $1.38 | $2.75
 
 *Short context is optimized for smaller requests, while long context supports larger inputs and more complex workflows.
 
