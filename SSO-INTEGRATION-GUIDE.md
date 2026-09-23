@@ -338,9 +338,9 @@ If you do **not** enable SCIM provisioning, JIT provisioning is used by default.
 
 The USAi team will provide:
 - **SCIM Base URL**: `https://auth.usai.gov/realms/your-realm/scim/v2`
-- **Authentication**: OAuth2 Client Credentials (Okta) or a bearer token (Entra ID).
-  For Client Credentials, we provide a token endpoint, client ID, and client
-  secret. Bearer tokens expire; agree on a renewal process with us.
+- **Authentication**: OAuth2 Client Credentials for both Microsoft Entra ID and
+  Okta. We provide a token endpoint, client ID, and client secret. We do not
+  issue long-lived bearer tokens.
 - **Supported Operations**: Create, Read, Update, Delete, Search (for Users and Groups)
 
 **What to tell us:**
@@ -355,11 +355,16 @@ The USAi team will provide:
 1. Navigate to your Enterprise Application for USAi
 2. Go to **Provisioning** > **Get started**
 3. Set **Provisioning Mode** to **Automatic**
-4. Configure **Admin Credentials**:
+4. Under **Admin Credentials**, set **Authentication Method** to
+   **OAuth2 Client Credentials Grant**, then enter:
    ```
    Tenant URL: https://auth.usai.gov/realms/your-realm/scim/v2
-   Secret Token: [Bearer token provided by USAi team]
+   Token Endpoint: https://auth.usai.gov/realms/your-realm/protocol/openid-connect/token
+   Client Identifier: [SCIM client ID provided by USAi team]
+   Client Secret: [SCIM client secret provided by USAi team]
    ```
+   Do not use **Bearer Authentication** or paste a token. See
+   [Admin credentials setup](./SSO-INTEGRATION-GUIDE-CUSTOMER.md#step-3-enter-admin-credentials).
 5. Click **Test Connection** to validate
 6. Configure **Mappings**:
    
@@ -391,8 +396,7 @@ The USAi team will provide:
 
 #### For Okta
 
-Use OAuth2 with Client Credentials, not a pasted bearer token. A pasted token
-expires and Okta cannot renew it. See
+Use OAuth2 with Client Credentials, not a pasted bearer token. See
 [Okta SCIM connector setup](./SSO-INTEGRATION-GUIDE-CUSTOMER.md#okta-scim-connector-setup)
 for the fields to enter.
 
@@ -404,9 +408,15 @@ Start with Okta's guide:
 #### Manual Testing with curl
 
 ```bash
-# Set environment variables
+# Get a short-lived access token with the SCIM client credentials
 export SCIM_BASE_URL="https://auth.usai.gov/realms/your-realm/scim/v2"
-export SCIM_TOKEN="your-bearer-token"
+export TOKEN_URL="https://auth.usai.gov/realms/your-realm/protocol/openid-connect/token"
+read -rs -p "SCIM client secret: " SCIM_CLIENT_SECRET; echo
+SCIM_TOKEN=$(curl -s -X POST "$TOKEN_URL" \
+  -d grant_type=client_credentials \
+  -d client_id=scim-client \
+  --data-urlencode "client_secret=${SCIM_CLIENT_SECRET}" | jq -r .access_token)
+unset SCIM_CLIENT_SECRET
 
 # Test 1: Get Service Provider Configuration
 curl -X GET "${SCIM_BASE_URL}/ServiceProviderConfig" \
@@ -531,7 +541,7 @@ If you're using SCIM-only provisioning with group-based authorization, here's th
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| 401 Unauthorized | Invalid or expired bearer token | Request new token from USAi team |
+| 401 Unauthorized | Wrong client ID or secret, or a rotated secret | Confirm the credentials, or request a new client secret from USAi |
 | 409 Conflict | User already exists | Check for duplicate emails or usernames |
 | 400 Bad Request | Invalid attribute format | Verify attribute mapping matches SCIM schema |
 | 404 Not Found | User/group doesn't exist | Ensure initial sync completed successfully |
@@ -602,7 +612,7 @@ During the co-work session, we'll configure mappers like:
 - [ ] Verify tokens are not leaked in URLs or logs
 - [ ] Confirm proper logout terminates all sessions
 - [ ] Test access with expired/invalid tokens (should fail)
-- [ ] Verify SCIM API is only accessible with valid bearer token
+- [ ] Verify SCIM API rejects requests without a valid access token
 
 ### Production Rollout Checklist
 
@@ -678,12 +688,13 @@ During the co-work session, we'll configure mappers like:
 
 #### Provisioning sync fails with authentication error
 
-**Cause**: Invalid or expired bearer token
+**Cause**: Wrong client ID, client secret, or token endpoint, or the secret was rotated
 
 **Solution**:
-1. Contact USAi team to generate new bearer token
-2. Update token in IdP provisioning configuration
-3. Test connection after updating
+1. Confirm the token endpoint and client ID match what USAi provided
+2. If needed, contact the USAi team for a new client secret
+3. Update the secret in your IdP provisioning configuration
+4. Test connection after updating
 
 #### Users provisioned but attributes are missing
 
@@ -836,8 +847,9 @@ Users: /Users
 Groups: /Groups
 
 # Authentication
-Method: Bearer Token
-Header: Authorization: Bearer {token}
+Method: OAuth2 Client Credentials
+Token URL: /realms/{realm}/protocol/openid-connect/token
+Header: Authorization: Bearer {short-lived access token}
 
 # Content Type
 Request: application/scim+json

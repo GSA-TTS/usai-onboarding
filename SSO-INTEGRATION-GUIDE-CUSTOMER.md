@@ -58,7 +58,7 @@ Please confirm you have the following:
 
 The USAi team will provide you with:
 - Your agency's dedicated **realm name** (used in redirect URLs)
-- **SCIM connection details and credentials** for the provisioning method agreed with your team
+- **SCIM connection details and OAuth2 client credentials** (if using automated provisioning)
 - A **scheduled co-work session** (if needed) to finalize configuration together
 
 ---
@@ -306,12 +306,13 @@ group provisioning, and the Microsoft Entra UI screens, see the
 
 Tell us you'd like SCIM enabled, and we'll provide:
 - **SCIM Base URL**: `https://auth.usai.gov/realms/your-realm/scim/v2`
-- **Authentication details** for your connector. For OAuth2 Client Credentials,
-  these are a token endpoint, SCIM client ID, and client secret.
+- **OAuth2 Client Credentials**: a token endpoint, SCIM client ID, and client
+  secret. Use these in both Microsoft Entra ID and Okta.
 
-An access token and a client secret are not interchangeable. If your connector
-only accepts a pasted token, agree on a renewal process with USAi before enabling
-provisioning. Do not assume the token will remain valid indefinitely.
+USAi uses OAuth2 Client Credentials for SCIM. We do not issue long-lived bearer
+tokens. Your identity provider uses the client ID and secret to get short-lived
+access tokens and renews them automatically. An access token and a client secret
+are not interchangeable; never paste the secret into a token field.
 
 > ⚠️ Replace `your-realm` in the URL above with the realm name provided by the USAi team.
 
@@ -326,7 +327,7 @@ provisioning. Do not assume the token will remain valid indefinitely.
 ##### Prerequisites
 
 Before you begin, make sure you have:
-- [ ] The **SCIM Base URL** and **Bearer Token** from the USAi team
+- [ ] The **SCIM Base URL**, **token endpoint**, **client ID**, and **client secret** from the USAi team
 - [ ] **Admin access** to your Azure/Entra tenant
 - [ ] An existing **Enterprise Application** for USAi (if you set up OIDC or SAML, you may already have one; if not, you'll create one below)
 
@@ -360,20 +361,28 @@ Before you begin, make sure you have:
 
 ##### Step 3: Enter Admin Credentials
 
-Under the **Admin Credentials** section, enter the following:
+Under **Admin Credentials**, set **Authentication Method** to
+**OAuth2 Client Credentials Grant**, then enter:
 
 | Field | Value |
 |-------|-------|
 | **Tenant URL** | `https://auth.usai.gov/realms/your-realm/scim/v2` |
-| **Secret Token** | *(paste the bearer token provided by the USAi team)* |
+| **Token Endpoint** | `https://auth.usai.gov/realms/your-realm/protocol/openid-connect/token` |
+| **Client Identifier** | The SCIM client ID from USAi, normally `scim-client` |
+| **Client Secret** | The SCIM secret supplied securely by USAi |
+
+Do not use the **Bearer Authentication** option or paste a token into a
+**Secret Token** field. A pasted token expires and does not renew. Microsoft
+recommends client credentials for this reason. See
+[Microsoft's SCIM authentication guidance](https://learn.microsoft.com/en-us/entra/identity/app-provisioning/use-scim-to-provision-users-and-groups).
 
 Click **Test Connection**. You should see:
 
 > ✅ *"The supplied credentials are authorized to enable provisioning."*
 
 If the test fails, double-check:
-- The URL has no trailing slash and no typos
-- The bearer token was copied completely (no leading/trailing spaces)
+- The URLs have no trailing slash and no typos
+- The client ID and secret were copied completely (no leading/trailing spaces)
 - Your network/firewall allows outbound HTTPS traffic to `auth.usai.gov`
 
 Click **Save** before proceeding.
@@ -561,10 +570,9 @@ instead; the USAi SCIM client is configured for Client Credentials.
    provisioning continues after the first access token expires.
 
 OAuth still uses a **bearer access token** on SCIM requests. The client ID and
-secret let the connector obtain replacement tokens. A manually pasted access
-token may work for a connection test, but it expires and is not a durable setup
-unless its renewal is managed. Never send tokens or client secrets in email,
-screenshots, or support tickets.
+secret let the connector obtain replacement tokens automatically. Do not use a
+manually pasted token. Never send client secrets in email, screenshots, or
+support tickets.
 
 ### Managing Users With SCIM Groups
 
@@ -751,12 +759,14 @@ Before rolling out SSO to all your users:
 
 ### SCIM: Provisioning Fails With Authentication Error
 
-**What it means:** The bearer token may be invalid or expired.
+**What it means:** The client ID or secret is wrong, the secret was rotated, or
+the token endpoint is wrong.
 
 **How to fix it:**
-1. Contact us to request a new bearer token
-2. Update the token in your identity provider's provisioning configuration
-3. Click **Test Connection** again to verify
+1. Confirm the token endpoint and client ID match what USAi provided
+2. If the secret may be wrong or rotated, contact us for a new client secret
+3. Update the secret in your identity provider's provisioning configuration
+4. Click **Test Connection** again to verify
 
 ### SCIM: Users Aren't Being Deactivated When Removed
 
