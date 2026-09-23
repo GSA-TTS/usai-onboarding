@@ -58,7 +58,7 @@ Please confirm you have the following:
 
 The USAi team will provide you with:
 - Your agency's dedicated **realm name** (used in redirect URLs)
-- A **SCIM bearer token** (if using automated provisioning)
+- **SCIM connection details and credentials** for the provisioning method agreed with your team
 - A **scheduled co-work session** (if needed) to finalize configuration together
 
 ---
@@ -306,7 +306,12 @@ group provisioning, and the Microsoft Entra UI screens, see the
 
 Tell us you'd like SCIM enabled, and we'll provide:
 - **SCIM Base URL**: `https://auth.usai.gov/realms/your-realm/scim/v2`
-- **Bearer Token**: For authenticating SCIM requests
+- **Authentication details** for your connector. For OAuth2 Client Credentials,
+  these are a token endpoint, SCIM client ID, and client secret.
+
+An access token and a client secret are not interchangeable. If your connector
+only accepts a pasted token, agree on a renewal process with USAi before enabling
+provisioning. Do not assume the token will remain valid indefinitely.
 
 > ⚠️ Replace `your-realm` in the URL above with the realm name provided by the USAi team.
 
@@ -513,24 +518,53 @@ After the initial sync, Entra runs incremental syncs approximately every **40 mi
    - Configure a **Notification Email** under **Provisioning** → **Settings**
    - Enter the email of the person who should receive provisioning alerts
 
-#### Okta
+#### Okta SCIM connector setup
 
-1. In your USAi application, go to the **Provisioning** tab
-2. Click **Configure API Integration** and check **Enable API integration**
-3. Enter:
+Start with Okta's guide:
+[Create your private integration in Okta](https://developer.okta.com/docs/guides/scim-provisioning-integration-connect/main/#create-your-private-integration-in-okta).
+Use SCIM 2.0. A separate provisioning integration can work alongside your existing
+USAi sign-in app; you do not need to replace your SSO setup.
+
+**Check the authentication options first.** Some Okta test templates ask for an
+OAuth token or an HTTP-header bearer token. Those fields expect an access token,
+not a client secret. They do not, by themselves, exchange a client ID and secret
+for new tokens.
+
+If the USAi team supplied a SCIM client ID and secret, use an integration that
+offers **OAuth2 → Client Credentials**. Okta documents this option under
+[Add SCIM provisioning to app integrations](https://help.okta.com/oie/en-us/Content/Topics/Apps/Apps_App_Integration_Wizard_SCIM.htm).
+Options can vary by integration and Okta environment. If Client Credentials is
+not available, contact the USAi team and your Okta administrator before proceeding.
+Do not paste the client secret into a token field or choose Authorization Code
+instead; the USAi SCIM client is configured for Client Credentials.
+
+1. Open **Provisioning** → **Configure API Integration** and enable API integration.
+2. Select **OAuth2**, then **Client Credentials**, and enter:
 
    | Field | Value |
    |-------|-------|
-   | **Base URL** | `https://auth.usai.gov/realms/your-realm/scim/v2` |
-   | **API Token** | The bearer token we provided |
+   | **SCIM Base URL** | `https://auth.usai.gov/realms/your-realm/scim/v2` |
+   | **Token endpoint** | `https://auth.usai.gov/realms/your-realm/protocol/openid-connect/token` |
+   | **Client ID** | The SCIM client ID from USAi, normally `scim-client` |
+   | **Client secret** | The SCIM secret supplied securely by USAi |
 
-4. Click **Test API Credentials** — you should see a success message
-5. Under **To App**, enable:
+   Replace `your-realm` with the realm name from USAi. These are provisioning
+   credentials issued by USAi, not the Okta SSO credentials you sent us.
+
+3. Click **Test API Credentials**. Resolve any errors before enabling user changes.
+4. Under **To App**, enable:
    - Create Users
    - Update User Attributes
    - Deactivate Users
-6. Configure attribute mappings as needed
-7. Save and enable provisioning
+5. Review attribute mappings and start with a small assigned test group.
+6. Test user creation, an attribute update, and deactivation. Also confirm that
+   provisioning continues after the first access token expires.
+
+OAuth still uses a **bearer access token** on SCIM requests. The client ID and
+secret let the connector obtain replacement tokens. A manually pasted access
+token may work for a connection test, but it expires and is not a durable setup
+unless its renewal is managed. Never send tokens or client secrets in email,
+screenshots, or support tickets.
 
 ### Managing Users With SCIM Groups
 
