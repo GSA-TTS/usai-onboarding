@@ -1,7 +1,7 @@
 # USAi SCIM Provisioning Guide
 
 This guide explains how SCIM provisioning works with USAi, what your agency
-controls in Microsoft Entra ID, and what happens to existing USAi users when
+controls in Microsoft Entra ID or Okta, and what happens to existing USAi users when
 SCIM is introduced.
 
 This guide supplements the full
@@ -12,20 +12,34 @@ SCIM is separate from single sign-on. Users still authenticate through your
 identity provider using OIDC or SAML. SCIM manages user records, attributes, and
 group membership in USAi.
 
+## Okta setup
+
+Start with Okta's
+[Create your private integration in Okta](https://developer.okta.com/docs/guides/scim-provisioning-integration-connect/main/#create-your-private-integration-in-okta)
+guide, then use the [USAi Okta SCIM connector settings](./SSO-INTEGRATION-GUIDE-CUSTOMER.md#okta-scim-connector-setup).
+
+If USAi supplied a SCIM client ID and secret, your integration needs
+**OAuth2 → Client Credentials**. Some Okta test templates instead ask for a
+bearer token. Do not paste a client secret into that field. Confirm the available
+authentication options with your Okta administrator; they can vary by connector
+and Okta environment.
+
+The sections below that name Microsoft Entra describe Entra-specific screens.
+Use the linked Okta instructions for the Okta setup screens.
+
 ## End-To-End Flow
 
 ```
-Microsoft Entra ID provisioning service
+Microsoft Entra ID or Okta provisioning service
   -> USAi SCIM endpoint
   -> USAi authentication service
   -> USAi user and group records
 ```
 
-In this model, Entra ID is the SCIM client and USAi is the SCIM service
-provider.
+Your identity provider is the SCIM client. USAi is the SCIM service provider.
 
-Entra sends provisioning requests to USAi. USAi does not push users or groups to
-Entra.
+Your identity provider sends provisioning requests to USAi. USAi does not push
+users or groups to your identity provider.
 
 ## What SCIM Can Manage
 
@@ -247,4 +261,4 @@ Before a co-work session, send:
 - The Entra groups that should be provisioned.
 - The intended mapping from Entra groups to USAi roles.
 - The intended deprovisioning behavior.
-- A technical contact who can view Entra provisioning logs during testing.
+- A technical contact who can view Entra or Okta provisioning logs during testing.
