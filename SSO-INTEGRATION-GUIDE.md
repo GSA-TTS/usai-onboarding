@@ -352,7 +352,9 @@ The USAi team will provide:
 
 #### For Azure AD / Entra ID
 
-1. Navigate to your Enterprise Application for USAi
+1. Navigate to your **Non-gallery Enterprise Application for USAi provisioning**.
+   This is separate from your SSO App Registration. See
+   [Create the Enterprise Application for Provisioning](./SSO-INTEGRATION-GUIDE-CUSTOMER.md#step-1-create-the-enterprise-application-for-provisioning).
 2. Go to **Provisioning** > **Get started**
 3. Set **Provisioning Mode** to **Automatic**
 4. Under **Admin Credentials**, set **Authentication Method** to

@@ -376,6 +376,15 @@ Do not use the **Bearer Authentication** option or paste a token into a
 recommends client credentials for this reason. See
 [Microsoft's SCIM authentication guidance](https://learn.microsoft.com/en-us/entra/identity/app-provisioning/use-scim-to-provision-users-and-groups).
 
+> **Entra and OAuth2 Client Credentials:** This works with Entra when you use
+> the **separate Non-gallery provisioning app** from Step 1. Enter these
+> credentials there, not in your SSO App Registration.
+>
+> Some Entra connections send the client ID and secret twice in one token
+> request. Some token services reject that. If **Test Connection** fails, check
+> the fields above first. Then contact the USAi team with the error and time of
+> the test. We can check our logs.
+
 Click **Test Connection**. You should see:
 
 > ✅ *"The supplied credentials are authorized to enable provisioning."*
