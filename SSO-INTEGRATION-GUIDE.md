@@ -47,7 +47,7 @@ Before beginning the integration, ensure you have:
 - [ ] Keycloak realm name for your agency
 - [ ] Client ID and Client Secret (for OIDC)
 - [ ] Metadata URLs or certificates (for SAML)
-- [ ] SCIM endpoint URL and bearer token
+- [ ] SCIM endpoint URL and authentication details
 - [ ] Scheduled co-work session
 
 ## Integration Options
@@ -338,8 +338,9 @@ If you do **not** enable SCIM provisioning, JIT provisioning is used by default.
 
 The USAi team will provide:
 - **SCIM Base URL**: `https://auth.usai.gov/realms/your-realm/scim/v2`
-- **Authentication Method**: Bearer Token
-- **Bearer Token**: Long-lived API token for SCIM operations
+- **Authentication**: OAuth2 Client Credentials (Okta) or a bearer token (Entra ID).
+  For Client Credentials, we provide a token endpoint, client ID, and client
+  secret. Bearer tokens expire; agree on a renewal process with us.
 - **Supported Operations**: Create, Read, Update, Delete, Search (for Users and Groups)
 
 **What to tell us:**
@@ -390,24 +391,13 @@ The USAi team will provide:
 
 #### For Okta
 
-1. Navigate to your USAi application
-2. Go to **Provisioning** tab
-3. Click **Configure API Integration**
-4. Check **Enable API integration**
-5. Configure:
-   ```
-   Base URL: https://auth.usai.gov/realms/your-realm/scim/v2
-   API Token: [Bearer token provided by USAi team]
-   ```
-6. Click **Test API Credentials**
-7. Navigate to **To App** settings
-8. Enable:
-   - Create Users
-   - Update User Attributes
-   - Deactivate Users
-   - Sync Password (optional)
-9. Configure attribute mappings as needed
-10. Navigate to **Provisioning** > **To App** and enable provisioning
+Use OAuth2 with Client Credentials, not a pasted bearer token. A pasted token
+expires and Okta cannot renew it. See
+[Okta SCIM connector setup](./SSO-INTEGRATION-GUIDE-CUSTOMER.md#okta-scim-connector-setup)
+for the fields to enter.
+
+Start with Okta's guide:
+[Create your private integration in Okta](https://developer.okta.com/docs/guides/scim-provisioning-integration-connect/main/#create-your-private-integration-in-okta).
 
 ### Step 2: Test SCIM Provisioning
 
