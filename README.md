@@ -102,6 +102,7 @@ USAi delivers security and interaction logs to your dedicated AWS resources. You
 **[Log Access Quick Start](./log-access/)** - Get up and running in 10 minutes
 
 Additional guides:
+- [Windows PowerShell Quick Start](./log-access/windows-powershell.md) - Copy-and-paste AWS CLI installation, access checks, and log downloads
 - [Complete Log Access Guide](./log-access/log-access-guide.md) - Full setup reference with Python consumer script
 - [Raw vs Redacted Logs](./log-access/raw-vs-redacted-logs.md) - Choosing between PII-redacted and full-content logs
 - [Interaction Log Schemas](./log-access/examples/) - Canonical JSON Schemas and examples for both the current and upcoming split log formats
