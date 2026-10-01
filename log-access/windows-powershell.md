@@ -7,6 +7,8 @@ is on one line. Copy the whole line.
 Before you start, get these details from USAi:
 
 - Your tenant code and AWS region.
+- The expected AWS account ID and reader ARN for your log stream. The ARN is
+  the full identifier of the AWS identity that can read your logs.
 - Your S3 bucket name. This is where your log files are stored.
 - Your SQS queue URL. This is where notices about new files arrive.
 - Your access key ID and secret access key.
@@ -157,7 +159,7 @@ Optionally preview an **uncompressed** file locally:
 if ($LocalFile.EndsWith(".gz")) {
     Write-Host "This file is gzip-compressed. Extract it with an approved gzip-capable tool before viewing it."
 } else {
-    Get-Content -LiteralPath $LocalFile -TotalCount 5
+    Get-Content -LiteralPath $LocalFile -Encoding UTF8 -TotalCount 5
 }
 ```
 
