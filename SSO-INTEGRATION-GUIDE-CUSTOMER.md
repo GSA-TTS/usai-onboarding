@@ -330,6 +330,8 @@ Before you begin, make sure you have:
 - [ ] The **SCIM Base URL**, **token endpoint**, **client ID**, and **client secret** from the USAi team
 - [ ] **Admin access** to your Azure/Entra tenant
 - [ ] An existing **Enterprise Application** for USAi (if you set up OIDC or SAML, you may already have one; if not, you'll create one below)
+- [ ] The exact **USAi group names** confirmed by the USAi team; you will create
+      same-named groups in Entra if you are provisioning group membership
 
 ##### Step 1: Create the Enterprise Application for Provisioning
 
@@ -440,6 +442,30 @@ Click **Save** before proceeding.
 
 If you want to use group-based access control (recommended), you need to enable group provisioning:
 
+First, create Entra groups whose names **exactly match** the groups already in
+your USAi realm. Names are case-sensitive and spaces and hyphens matter. For
+example, create `API-Key-Admin`, not `API Key Admin`, `api-key-admin`, or
+`USAi-Admins`.
+
+The standard USAi groups are:
+
+| Exact group name | Access provided |
+|------------------|-----------------|
+| `Default-User` | Chat, Console, and API documentation |
+| `Admin` | Full agency administration |
+| `API Users` | Invoke the API |
+| `API-Key-Admin` | Manage API keys for agency users |
+| `API-Key-User-Short-Term` | Manage the user's own short-term API keys |
+| `Model-Manager` | Manage agency model availability and the default model |
+| `Financial-Manager` | Manage the agency API budget |
+| `Group-Manager` | Manage groups |
+
+Create only the groups your agency will use. Ask the USAi team to confirm the
+current list for your realm before provisioning because your realm may have
+additional groups or may not use every standard group. USAi has already assigned
+roles to these groups; SCIM synchronizes membership and does not translate
+different IdP group names into USAi roles.
+
 1. Go back to **Mappings**
 2. Click **Provision Azure Active Directory Groups**
 3. Set **Enabled** to **Yes**
@@ -485,8 +511,9 @@ Now you need to tell Entra which users and groups should be provisioned to USAi:
 
    **Option A: Assign groups (Recommended)**
    - Click **None Selected** under **Groups**
-   - Search for and select the Entra ID groups that should have access to USAi
-   - Example groups: `USAi-Users`, `USAi-Admins`, `USAi-PowerUsers`
+   - Search for and select the same-named Entra ID groups you created in Step 5
+   - Confirm that each selected name exactly matches a group in your USAi realm,
+     including capitalization, spaces, and hyphens
    - Click **Select**, then **Assign**
    - All members of those groups will be provisioned, and group memberships will be synced
 
@@ -588,10 +615,12 @@ support tickets.
 If you're using SCIM with group-based access, here's the recommended workflow:
 
 **Initial Setup:**
-1. Create groups in your IdP for different USAi access levels (e.g., `USAi-Users`, `USAi-Admins`)
-2. Assign those groups to the USAi application
-3. Let us know which groups should map to which USAi roles
-4. Wait for the initial SCIM sync to complete
+1. Get the current USAi group names from the USAi team
+2. Create the needed groups in your IdP using those exact names, including
+   capitalization, spaces, and hyphens
+3. Add users to the appropriate same-named IdP groups
+4. Assign those groups to the USAi provisioning application
+5. Verify the group `displayName` mapping and wait for the initial SCIM sync to complete
 
 **Adding a User:**
 1. Add the user to the appropriate group(s) in your IdP

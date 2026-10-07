@@ -346,7 +346,9 @@ The USAi team will provide:
 **What to tell us:**
 - Whether you want SCIM provisioning enabled (this will automatically disable JIT provisioning)
 - Whether you want group synchronization enabled
-- Which IdP groups should map to USAi roles (if using group-based authorization)
+- Which existing USAi groups the agency needs (if using group-based
+  authorization). The agency must create IdP groups with exactly matching names,
+  including capitalization, spaces, and hyphens.
 
 ### Step 1: Configure SCIM in Your IdP
 
@@ -390,7 +392,12 @@ The USAi team will provide:
 7. **Configure Group Assignment** (if using group-based authorization):
    - Navigate to **Users and groups** in your Enterprise Application
    - Click **Add user/group**
-   - Select the Entra ID groups that should have access to USAi
+   - Create or select Entra ID groups whose names exactly match the existing
+     USAi groups. Standard names are `Default-User`, `Admin`, `API Users`,
+     `API-Key-Admin`, `API-Key-User-Short-Term`, `Model-Manager`,
+     `Financial-Manager`, and `Group-Manager`.
+   - Confirm the current list with the USAi team; an agency realm may have
+     additional groups or may not use every standard group.
    - These groups will be synchronized via SCIM with their members
 
 8. Set **Provisioning Status** to **On**
@@ -486,8 +493,11 @@ The testing guide includes:
 If you're using SCIM-only provisioning with group-based authorization, here's the recommended workflow:
 
 #### Initial Setup
-1. **Create Entra ID Groups** for different USAi roles/access levels:
-   - Example: `USAi-Users`, `USAi-Admins`, `USAi-PowerUsers`
+1. **Create Entra ID Groups** that exactly match the existing USAi group names:
+   - Matching includes capitalization, spaces, and hyphens.
+   - Example: `API-Key-Admin` matches; `API Key Admin`, `api-key-admin`, and
+     `USAi-Admins` do not.
+   - Confirm the current group list with the USAi team before provisioning.
 2. **Assign groups to the USAi Enterprise Application** in Entra
 3. **Configure SCIM group provisioning** as described above
 4. **Wait for initial SCIM sync** to complete
@@ -497,9 +507,10 @@ If you're using SCIM-only provisioning with group-based authorization, here's th
    - User membership is synchronized to USAi via SCIM
    - User account is automatically created in USAi
    - Group memberships are reflected in USAi
-2. **Map SCIM groups to USAi roles** (USAi team configures):
-   - Entra group `USAi-Admins` → USAi Admin role
-   - Entra group `USAi-Users` → USAi User role
+2. **Use the existing USAi group-to-role assignments**:
+   - The USAi team configures roles on the USAi groups.
+   - SCIM synchronizes membership from the exact same-named Entra groups; it
+     does not translate different Entra group names into USAi roles.
 3. **User can now sign in** via SSO
    - Authentication happens via OIDC/SAML
    - Authorization (roles) determined by SCIM group membership

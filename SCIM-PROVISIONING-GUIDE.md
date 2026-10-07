@@ -181,6 +181,36 @@ Then assign the users or groups that should be provisioned:
 
 SCIM group provisioning lets Entra send groups and membership to USAi.
 
+### Required: Create Matching Groups In Your IdP
+
+Before enabling group provisioning, create the USAi access groups in Entra or
+Okta. Each IdP group `displayName` must **exactly match** the corresponding
+group that already exists in your USAi realm. Matching includes capitalization,
+spaces, and hyphens. For example, `API-Key-Admin` matches; `API Key Admin`,
+`api-key-admin`, and `USAi-Admins` do not.
+
+The standard USAi groups are:
+
+| Exact group name | Access provided |
+|------------------|-----------------|
+| `Default-User` | Chat, Console, and API documentation |
+| `Admin` | Full agency administration |
+| `API Users` | Invoke the API |
+| `API-Key-Admin` | Manage API keys for agency users |
+| `API-Key-User-Short-Term` | Manage the user's own short-term API keys |
+| `Model-Manager` | Manage agency model availability and the default model |
+| `Financial-Manager` | Manage the agency API budget |
+| `Group-Manager` | Manage groups |
+
+Create only the groups your agency will use, add users to the appropriate
+groups, and assign those groups to the USAi provisioning application. Before
+provisioning, ask the USAi team to confirm the current group names in your realm;
+your agency may have additional groups or may not use every standard group.
+
+Do not invent new IdP group names and expect USAi to translate them into roles.
+The matching USAi groups already have the appropriate roles. SCIM synchronizes
+membership into those groups; it does not create the USAi authorization model.
+
 Recommended group mappings:
 
 | Microsoft Entra attribute | USAi SCIM attribute |
@@ -207,14 +237,15 @@ Before enabling group provisioning, decide which system owns group membership.
 
 Recommended model:
 
-- Entra owns USAi access groups.
-- Agency admins add or remove users from Entra groups.
-- Entra syncs those groups and memberships to USAi through SCIM.
-- USAi maps those synced groups to the appropriate USAi roles.
+- The USAi team owns the groups and role assignments in the USAi realm.
+- The agency creates same-named groups and owns their membership in Entra or
+  Okta.
+- Agency admins add or remove users from those matching IdP groups.
+- The IdP syncs group membership to the existing USAi groups through SCIM.
 
-Avoid creating disconnected duplicate groups in Entra and USAi. If the group
-names do not line up, agree on the mapping with the USAi team before turning
-provisioning on.
+Do not create disconnected groups with different names in the IdP and USAi. If
+the exact group names do not line up, stop and confirm the correct names with
+the USAi team before turning provisioning on.
 
 ## Deprovisioning Decisions
 
@@ -258,7 +289,7 @@ Before a co-work session, send:
 - Whether SCIM should manage users, groups, or both.
 - Whether SCIM should manage all existing USAi users or only newly assigned
   users.
-- The Entra groups that should be provisioned.
-- The intended mapping from Entra groups to USAi roles.
+- The exact same-named IdP and USAi groups that should be provisioned.
+- Confirmation that capitalization, spaces, and hyphens match.
 - The intended deprovisioning behavior.
 - A technical contact who can view Entra or Okta provisioning logs during testing.
