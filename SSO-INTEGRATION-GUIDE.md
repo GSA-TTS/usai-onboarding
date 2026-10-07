@@ -396,8 +396,10 @@ The USAi team will provide:
      USAi groups. Standard names are `Default-User`, `Admin`, `API Users`,
      `API-Key-Admin`, `API-Key-User-Short-Term`, `Model-Manager`,
      `Financial-Manager`, and `Group-Manager`.
-   - Confirm the current list with the USAi team; an agency realm may have
-     additional groups or may not use every standard group.
+   - USAi currently supports only those groups for SCIM provisioning. Do not
+     create or provision custom or additional groups. Contact the USAi team if
+     the agency needs a group that is not listed; it cannot be used until USAi
+     adds support for it.
    - These groups will be synchronized via SCIM with their members
 
 8. Set **Provisioning Status** to **On**
@@ -497,7 +499,8 @@ If you're using SCIM-only provisioning with group-based authorization, here's th
    - Matching includes capitalization, spaces, and hyphens.
    - Example: `API-Key-Admin` matches; `API Key Admin`, `api-key-admin`, and
      `USAi-Admins` do not.
-   - Confirm the current group list with the USAi team before provisioning.
+   - Use only the standard groups listed above; custom or additional groups are
+     not currently supported for SCIM provisioning.
 2. **Assign groups to the USAi Enterprise Application** in Entra
 3. **Configure SCIM group provisioning** as described above
 4. **Wait for initial SCIM sync** to complete

@@ -202,10 +202,13 @@ The standard USAi groups are:
 | `Financial-Manager` | Manage the agency API budget |
 | `Group-Manager` | Manage groups |
 
-Create only the groups your agency will use, add users to the appropriate
-groups, and assign those groups to the USAi provisioning application. Before
-provisioning, ask the USAi team to confirm the current group names in your realm;
-your agency may have additional groups or may not use every standard group.
+> **Current limitation:** USAi supports SCIM provisioning only for the groups
+> listed above. Do not create or provision custom or additional groups. If your
+> agency needs a group that is not listed, contact the USAi team before
+> configuring it; it cannot be used until USAi adds support for it.
+
+Create only the listed groups your agency will use, add users to the appropriate
+groups, and assign those groups to the USAi provisioning application.
 
 Do not invent new IdP group names and expect USAi to translate them into roles.
 The matching USAi groups already have the appropriate roles. SCIM synchronizes
