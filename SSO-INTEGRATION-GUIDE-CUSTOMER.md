@@ -461,9 +461,8 @@ The standard USAi groups are:
 | `Group-Manager` | Manage groups |
 
 > **Current limitation:** USAi supports SCIM provisioning only for the groups
-> listed above. Do not create or provision custom or additional groups. If your
-> agency needs a group that is not listed, contact the USAi team before
-> configuring it; it cannot be used until USAi adds support for it.
+> listed above. Do not create or provision custom or additional groups. USAi is
+> not accommodating additional-group requests at this time.
 
 Create only the listed groups your agency will use. USAi has already assigned
 roles to these groups; SCIM synchronizes membership and does not translate
@@ -671,7 +670,7 @@ Here's a summary of everything we'll need, depending on your setup:
 |------|-----------|
 | Confirmation that you want SCIM enabled | ✅ Yes |
 | Whether you want group sync enabled | ✅ Yes |
-| List of IdP groups → USAi role mappings | If using groups |
+| Exact names of the supported IdP and USAi groups to provision | If using groups |
 
 ---
 

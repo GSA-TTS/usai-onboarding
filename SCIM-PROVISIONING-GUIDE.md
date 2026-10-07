@@ -203,9 +203,8 @@ The standard USAi groups are:
 | `Group-Manager` | Manage groups |
 
 > **Current limitation:** USAi supports SCIM provisioning only for the groups
-> listed above. Do not create or provision custom or additional groups. If your
-> agency needs a group that is not listed, contact the USAi team before
-> configuring it; it cannot be used until USAi adds support for it.
+> listed above. Do not create or provision custom or additional groups. USAi is
+> not accommodating additional-group requests at this time.
 
 Create only the listed groups your agency will use, add users to the appropriate
 groups, and assign those groups to the USAi provisioning application.

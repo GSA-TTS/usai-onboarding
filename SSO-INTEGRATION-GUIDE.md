@@ -397,9 +397,8 @@ The USAi team will provide:
      `API-Key-Admin`, `API-Key-User-Short-Term`, `Model-Manager`,
      `Financial-Manager`, and `Group-Manager`.
    - USAi currently supports only those groups for SCIM provisioning. Do not
-     create or provision custom or additional groups. Contact the USAi team if
-     the agency needs a group that is not listed; it cannot be used until USAi
-     adds support for it.
+     create or provision custom or additional groups. USAi is not accommodating
+     additional-group requests at this time.
    - These groups will be synchronized via SCIM with their members
 
 8. Set **Provisioning Status** to **On**
@@ -485,10 +484,12 @@ The testing guide includes:
    - Verify user is deactivated (not deleted) in USAi
 
 4. **Test Group Provisioning** (if enabled)
-   - Create a group in IdP
-   - Assign users to the group
-   - Assign group to USAi application
-   - Verify group and members appear in USAi
+   - Select one of the supported groups listed above and create the IdP group,
+     if needed, using that exact USAi group name
+   - Assign the test user to the matching IdP group
+   - Assign that group to the USAi application
+   - Verify the user appears as a member of the existing same-named USAi group
+   - Do not create a custom or additional group for testing
 
 ### Group-Based Authorization Workflow
 
