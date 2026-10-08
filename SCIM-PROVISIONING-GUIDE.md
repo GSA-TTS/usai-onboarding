@@ -181,15 +181,15 @@ Then assign the users or groups that should be provisioned:
 
 SCIM group provisioning lets Entra send groups and membership to USAi.
 
-### Required: Create Matching Groups In Your IdP
+### Required: Map IdP Groups To Supported USAi Groups
 
-Before enabling group provisioning, create the USAi access groups in Entra or
-Okta. Each IdP group `displayName` must **exactly match** the corresponding
-group that already exists in your USAi realm. Matching includes capitalization,
-spaces, and hyphens. For example, `API-Key-Admin` matches; `API Key Admin`,
-`api-key-admin`, and `USAi-Admins` do not.
+Your agency's IdP group names do not need to match USAi group names. If a source
+group has a different name, configure the `displayName` attribute with an
+**Expression** mapping that translates it to the supported USAi destination
+group. Use a **Direct** mapping only when the source and destination names
+already match exactly.
 
-The standard USAi groups are:
+The supported USAi destination groups are:
 
 | Exact group name | Access provided |
 |------------------|-----------------|
@@ -206,19 +206,35 @@ The standard USAi groups are:
 > listed above. Do not create or provision custom or additional groups. USAi is
 > not accommodating additional-group requests at this time.
 
-Create only the listed groups your agency will use, add users to the appropriate
-groups, and assign those groups to the USAi provisioning application.
+Select one source IdP group for each supported USAi destination group your
+agency will use. Add users to those source groups and assign the source groups to
+the USAi provisioning application.
 
-Do not invent new IdP group names and expect USAi to translate them into roles.
-The matching USAi groups already have the appropriate roles. SCIM synchronizes
-membership into those groups; it does not create the USAi authorization model.
+USAi groups already have the appropriate roles. The mapping translates the
+agency's source group name to a supported USAi group name; it does not create a
+new USAi group or authorization role.
 
 Recommended group mappings:
 
-| Microsoft Entra attribute | USAi SCIM attribute |
-|---------------------------|---------------------|
-| `displayName` | `displayName` |
-| `members` | `members` |
+| Microsoft Entra attribute | USAi SCIM attribute | Mapping type |
+|---------------------------|---------------------|--------------|
+| `displayName` | `displayName` | **Expression** when names differ; otherwise Direct |
+| `members` | `members` | Direct |
+
+For different source and destination names, use a `Switch` expression. Replace
+the example source names with your agency's actual IdP group names and include
+only the supported USAi destinations you need:
+
+```text
+Switch([displayName], ,
+  "Agency USAi Users", "Default-User",
+  "Agency USAi Administrators", "Admin",
+  "Agency API Users", "API Users")
+```
+
+Leave the default value (the second argument) blank so an unmapped source group
+is not passed through as a new USAi group. Assign only source groups included in
+the expression to the provisioning application.
 
 To configure group provisioning:
 
@@ -228,10 +244,12 @@ To configure group provisioning:
 4. Expand **Mappings**.
 5. Open **Provision Microsoft Entra ID Groups**.
 6. Set **Enabled** to **Yes**.
-7. Confirm the `displayName` and `members` mappings.
-8. In **Target object actions**, confirm Create, Update, and Delete match your
+7. Configure `displayName` as an Expression mapping when the source IdP name
+   differs from the USAi destination name. Otherwise, use Direct.
+8. Confirm that `members` uses a Direct mapping.
+9. In **Target object actions**, confirm Create, Update, and Delete match your
    agency's intended behavior.
-9. Save the mapping.
+10. Save the mapping.
 
 ## Choosing A Group Model
 
@@ -240,14 +258,14 @@ Before enabling group provisioning, decide which system owns group membership.
 Recommended model:
 
 - The USAi team owns the groups and role assignments in the USAi realm.
-- The agency creates same-named groups and owns their membership in Entra or
-  Okta.
-- Agency admins add or remove users from those matching IdP groups.
+- The agency owns its source groups and their membership in Entra or Okta.
+- The agency maps each source group to one supported USAi destination group.
+- Agency admins add or remove users from those source IdP groups.
 - The IdP syncs group membership to the existing USAi groups through SCIM.
 
-Do not create disconnected groups with different names in the IdP and USAi. If
-the exact group names do not line up, stop and confirm the correct names with
-the USAi team before turning provisioning on.
+Do not map a source group to a destination outside the supported list. Confirm
+the complete source-to-destination mapping with the USAi team before turning
+provisioning on.
 
 ## Deprovisioning Decisions
 
@@ -291,7 +309,7 @@ Before a co-work session, send:
 - Whether SCIM should manage users, groups, or both.
 - Whether SCIM should manage all existing USAi users or only newly assigned
   users.
-- The exact same-named IdP and USAi groups that should be provisioned.
-- Confirmation that capitalization, spaces, and hyphens match.
+- Each source IdP group name and its supported USAi destination group name.
+- The final `Switch` expression, if the source and destination names differ.
 - The intended deprovisioning behavior.
 - A technical contact who can view Entra or Okta provisioning logs during testing.

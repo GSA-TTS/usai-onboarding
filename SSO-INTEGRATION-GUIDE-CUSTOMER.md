@@ -330,8 +330,8 @@ Before you begin, make sure you have:
 - [ ] The **SCIM Base URL**, **token endpoint**, **client ID**, and **client secret** from the USAi team
 - [ ] **Admin access** to your Azure/Entra tenant
 - [ ] An existing **Enterprise Application** for USAi (if you set up OIDC or SAML, you may already have one; if not, you'll create one below)
-- [ ] The exact **USAi group names** confirmed by the USAi team; you will create
-      same-named groups in Entra if you are provisioning group membership
+- [ ] The source **IdP group names** and their supported USAi destination group
+      names confirmed by the USAi team, if you are provisioning group membership
 
 ##### Step 1: Create the Enterprise Application for Provisioning
 
@@ -442,12 +442,12 @@ Click **Save** before proceeding.
 
 If you want to use group-based access control (recommended), you need to enable group provisioning:
 
-First, create Entra groups whose names **exactly match** the groups already in
-your USAi realm. Names are case-sensitive and spaces and hyphens matter. For
-example, create `API-Key-Admin`, not `API Key Admin`, `api-key-admin`, or
-`USAi-Admins`.
+Your Entra group names do not need to match the USAi group names. If a source
+group has a different name, use an **Expression** mapping to translate its
+`displayName` to a supported USAi destination name. Use a **Direct** mapping only
+when the source and destination names already match exactly.
 
-The standard USAi groups are:
+The supported USAi destination groups are:
 
 | Exact group name | Access provided |
 |------------------|-----------------|
@@ -464,9 +464,9 @@ The standard USAi groups are:
 > listed above. Do not create or provision custom or additional groups. USAi is
 > not accommodating additional-group requests at this time.
 
-Create only the listed groups your agency will use. USAi has already assigned
-roles to these groups; SCIM synchronizes membership and does not translate
-different IdP group names into USAi roles.
+USAi has already assigned roles to these destination groups. The expression
+translates your agency's source group names to supported USAi group names; it
+does not create new USAi groups or roles.
 
 1. Go back to **Mappings**
 2. Click **Provision Azure Active Directory Groups**
@@ -475,15 +475,40 @@ different IdP group names into USAi roles.
 
    | Azure Active Directory Attribute | USAi (SCIM) Attribute | Mapping Type |
    |----------------------------------|-----------------------|-------------|
-   | `displayName` | `displayName` | Direct |
+   | `displayName` | `displayName` | **Expression** when names differ; otherwise Direct |
    | `members` | `members` | Direct |
 
-5. Under **Target Object Actions**, ensure these are checked:
+5. If any source group name differs from its USAi destination, edit the
+   `displayName` mapping:
+   1. Set **Mapping type** to **Expression**
+   2. Set **Target attribute** to `displayName`
+   3. Enter a `Switch` expression. Replace the example source names with your
+      agency's actual Entra group names and include only the supported USAi
+      destinations you need:
+
+      ```text
+      Switch([displayName], ,
+        "Agency USAi Users", "Default-User",
+        "Agency USAi Administrators", "Admin",
+        "Agency API Users", "API Users")
+      ```
+
+   4. Leave the default value (the second argument) blank so an unmapped source
+      group is not passed through as a new USAi group.
+   5. Click **OK**
+
+   If all source and destination names already match exactly, keep
+   `displayName` as a Direct mapping instead.
+
+6. Under **Target Object Actions**, ensure these are checked:
    - ✅ Create
    - ✅ Update
    - ✅ Delete
 
-6. Click **Save**
+7. Click **Save**
+
+Reference:
+[Microsoft Entra attribute-mapping expressions](https://learn.microsoft.com/en-us/entra/identity/app-provisioning/functions-for-customizing-application-data)
 
 ##### Step 6: Set the Provisioning Scope
 
@@ -513,9 +538,10 @@ Now you need to tell Entra which users and groups should be provisioned to USAi:
 
    **Option A: Assign groups (Recommended)**
    - Click **None Selected** under **Groups**
-   - Search for and select the same-named Entra ID groups you created in Step 5
-   - Confirm that each selected name exactly matches a group in your USAi realm,
-     including capitalization, spaces, and hyphens
+   - Search for and select the source Entra ID groups configured in Step 5
+   - Confirm that every selected source group is included in the `displayName`
+     expression or already has the exact name of a supported USAi destination
+     group
    - Click **Select**, then **Assign**
    - All members of those groups will be provisioned, and group memberships will be synced
 
@@ -617,12 +643,13 @@ support tickets.
 If you're using SCIM with group-based access, here's the recommended workflow:
 
 **Initial Setup:**
-1. Get the current USAi group names from the USAi team
-2. Create the needed groups in your IdP using those exact names, including
-   capitalization, spaces, and hyphens
-3. Add users to the appropriate same-named IdP groups
-4. Assign those groups to the USAi provisioning application
-5. Verify the group `displayName` mapping and wait for the initial SCIM sync to complete
+1. Confirm the supported USAi destination groups with the USAi team
+2. Identify the source IdP group for each destination group your agency needs
+3. Configure a `displayName` Expression mapping when the source and destination
+   names differ
+4. Add users to the appropriate source IdP groups
+5. Assign those source groups to the USAi provisioning application
+6. Verify the mapping and wait for the initial SCIM sync to complete
 
 **Adding a User:**
 1. Add the user to the appropriate group(s) in your IdP
@@ -670,7 +697,7 @@ Here's a summary of everything we'll need, depending on your setup:
 |------|-----------|
 | Confirmation that you want SCIM enabled | ✅ Yes |
 | Whether you want group sync enabled | ✅ Yes |
-| Exact names of the supported IdP and USAi groups to provision | If using groups |
+| Source IdP group → supported USAi destination group mappings | If using groups |
 
 ---
 
