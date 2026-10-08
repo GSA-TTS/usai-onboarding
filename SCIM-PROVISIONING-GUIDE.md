@@ -216,14 +216,29 @@ new USAi group or authorization role.
 
 Recommended group mappings:
 
-| Microsoft Entra attribute | USAi SCIM attribute | Mapping type |
-|---------------------------|---------------------|--------------|
-| `displayName` | `displayName` | **Expression** when names differ; otherwise Direct |
+| Microsoft Entra source | USAi SCIM attribute | Mapping type |
+|------------------------|---------------------|--------------|
+| `objectId` | `externalId` | Direct; keep the default mapping |
+| `objectId` or `displayName` | `displayName` | **Expression** when names differ; otherwise Direct |
 | `members` | `members` | Direct |
 
-For different source and destination names, use a `Switch` expression. Replace
-the example source names with your agency's actual IdP group names and include
-only the supported USAi destinations you need:
+For different source and destination names, choose one of these `Switch`
+expressions:
+
+**Option A — Object ID (recommended):** Object IDs remain stable when an agency
+renames a group. In Entra, open **Groups**, select the group, and copy its
+**Object ID** from **Overview**. Use the group Object ID—not the application
+Object ID or tenant ID.
+
+```text
+Switch([objectId], ,
+  "11111111-1111-1111-1111-111111111111", "Default-User",
+  "22222222-2222-2222-2222-222222222222", "Admin",
+  "33333333-3333-3333-3333-333333333333", "API Users")
+```
+
+**Option B — Display name:** This is easier to read, but the expression must be
+updated whenever the agency renames a source group.
 
 ```text
 Switch([displayName], ,
@@ -233,8 +248,16 @@ Switch([displayName], ,
 ```
 
 Leave the default value (the second argument) blank so an unmapped source group
-is not passed through as a new USAi group. Assign only source groups included in
-the expression to the provisioning application.
+is not passed through as a new USAi group. Include only the supported USAi
+destinations your agency needs and assign only source groups included in the
+expression to the provisioning application.
+
+In Entra's Expression Builder, **Add another value** only adds a predefined
+source attribute or test input; it does not add a source-to-destination mapping.
+Paste the complete `Switch` expression into the mapping's **Expression** code
+box. To test it, select `objectId` and enter a group GUID for Option A, or select
+`displayName` and enter a source group name for Option B. The expression output
+should be the supported USAi destination name.
 
 To configure group provisioning:
 
@@ -244,8 +267,8 @@ To configure group provisioning:
 4. Expand **Mappings**.
 5. Open **Provision Microsoft Entra ID Groups**.
 6. Set **Enabled** to **Yes**.
-7. Configure `displayName` as an Expression mapping when the source IdP name
-   differs from the USAi destination name. Otherwise, use Direct.
+7. Configure the target `displayName` as an Expression mapping using either
+   `[objectId]` or `[displayName]` when names differ. Otherwise, use Direct.
 8. Confirm that `members` uses a Direct mapping.
 9. In **Target object actions**, confirm Create, Update, and Delete match your
    agency's intended behavior.
@@ -309,7 +332,8 @@ Before a co-work session, send:
 - Whether SCIM should manage users, groups, or both.
 - Whether SCIM should manage all existing USAi users or only newly assigned
   users.
-- Each source IdP group name and its supported USAi destination group name.
-- The final `Switch` expression, if the source and destination names differ.
+- Whether the mapping uses Entra group Object IDs or display names.
+- Each source group Object ID or display name and its supported USAi destination.
+- The final `Switch` expression.
 - The intended deprovisioning behavior.
 - A technical contact who can view Entra or Okta provisioning logs during testing.
