@@ -18,7 +18,7 @@ Once we have the tenant instance built, and the firewalls open to your IP addres
 - We will setup mapping for properties (e.g. email address, name, org codes)
 - We will validate that the partner can sign into the system with their IDP
 
-**For detailed SSO configuration information, see the [Single Sign-On Integration Guide](./SSO-INTEGRATION-GUIDE.md).**
+**For agency SSO setup instructions, see the [USAi Single Sign-On Setup Guide](./SSO-INTEGRATION-GUIDE-CUSTOMER.md).**
 
 For automated user and group provisioning, see the
 [SCIM Provisioning Guide](./SCIM-PROVISIONING-GUIDE.md).

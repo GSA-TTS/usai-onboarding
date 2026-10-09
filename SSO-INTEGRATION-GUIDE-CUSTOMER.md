@@ -330,6 +330,9 @@ Before you begin, make sure you have:
 - [ ] The **SCIM Base URL**, **token endpoint**, **client ID**, and **client secret** from the USAi team
 - [ ] **Admin access** to your Azure/Entra tenant
 - [ ] An existing **Enterprise Application** for USAi (if you set up OIDC or SAML, you may already have one; if not, you'll create one below)
+- [ ] The source Entra group **Object IDs or display names** and their supported
+      USAi destination group names confirmed by the USAi team, if you are
+      provisioning group membership
 
 ##### Step 1: Create the Enterprise Application for Provisioning
 
@@ -440,22 +443,105 @@ Click **Save** before proceeding.
 
 If you want to use group-based access control (recommended), you need to enable group provisioning:
 
+Your Entra group names do not need to match the USAi group names. If a source
+group has a different name, use an **Expression** mapping to translate its
+`displayName` to a supported USAi destination name. Use a **Direct** mapping only
+when the source and destination names already match exactly.
+
+The supported USAi destination groups are:
+
+| Exact group name | Access provided |
+|------------------|-----------------|
+| `Default-User` | Chat, Console, and API documentation |
+| `Admin` | Full agency administration |
+| `API Users` | Invoke the API |
+| `API-Key-Admin` | Manage API keys for agency users |
+| `API-Key-User-Short-Term` | Manage the user's own short-term API keys |
+| `Model-Manager` | Manage agency model availability and the default model |
+| `Financial-Manager` | Manage the agency API budget |
+| `Group-Manager` | Manage groups |
+
+> **Current limitation:** USAi supports SCIM provisioning only for the groups
+> listed above. Do not create or provision custom or additional groups. USAi is
+> not accommodating additional-group requests at this time.
+
+USAi has already assigned roles to these destination groups. The expression
+translates your agency's source group names to supported USAi group names; it
+does not create new USAi groups or roles.
+
 1. Go back to **Mappings**
 2. Click **Provision Azure Active Directory Groups**
 3. Set **Enabled** to **Yes**
 4. Configure the following attribute mappings:
 
-   | Azure Active Directory Attribute | USAi (SCIM) Attribute | Mapping Type |
-   |----------------------------------|-----------------------|-------------|
-   | `displayName` | `displayName` | Direct |
+   | Microsoft Entra source | USAi (SCIM) attribute | Mapping type |
+   |------------------------|-----------------------|--------------|
+   | `objectId` | `externalId` | Direct; keep the default mapping |
+   | `objectId` or `displayName` | `displayName` | **Expression** when names differ; otherwise Direct |
    | `members` | `members` | Direct |
 
-5. Under **Target Object Actions**, ensure these are checked:
+5. If any source group name differs from its USAi destination, edit the
+   `displayName` mapping:
+   1. Set **Mapping type** to **Expression**
+   2. Set **Target attribute** to `displayName`
+   3. Choose one source identifier:
+
+      **Option A — Object ID (recommended):** Object IDs remain stable when a
+      group is renamed. In Entra, open **Groups**, select the group, and copy
+      its **Object ID** from **Overview**. Use the group Object ID—not the
+      application Object ID or tenant ID.
+
+      ```text
+      Switch([objectId], ,
+        "11111111-1111-1111-1111-111111111111", "Default-User",
+        "22222222-2222-2222-2222-222222222222", "Admin",
+        "33333333-3333-3333-3333-333333333333", "API Users")
+      ```
+
+      Replace each example GUID with the corresponding Entra group Object ID.
+
+      **Option B — Display name:** This is easier to read, but you must update
+      the expression whenever the agency renames a source group.
+
+      ```text
+      Switch([displayName], ,
+        "Agency USAi Users", "Default-User",
+        "Agency USAi Administrators", "Admin",
+        "Agency API Users", "API Users")
+      ```
+
+      Replace each example name with the corresponding Entra group display name.
+
+   4. Paste the complete `Switch` expression into the mapping's
+      **Expression** code box.
+   5. Leave the default value (the second argument) blank so an unmapped source
+      group is not passed through as a new USAi group.
+   6. Click **OK**
+
+   > **Do not use “Add another value” to enter the USAi group names.** In
+   > Entra's Expression Builder and test interface, that control only adds a
+   > predefined source attribute or another test input. The source-to-USAi
+   > pairs belong inside the `Switch` expression.
+
+   To test Option A, select `objectId` in the test-value dropdown and enter one
+   of the group GUIDs. To test Option B, select `displayName` and enter one of
+   the source group names. Click **Test expression** and confirm that the output
+   is the expected supported USAi destination name.
+
+   If all source and destination names already match exactly, keep
+   `displayName` as a Direct mapping instead.
+
+6. Under **Target Object Actions**, ensure these are checked:
    - ✅ Create
    - ✅ Update
    - ✅ Delete
 
-6. Click **Save**
+7. Click **Save**
+
+Reference:
+[Microsoft Entra attribute-mapping expressions](https://learn.microsoft.com/en-us/entra/identity/app-provisioning/functions-for-customizing-application-data)
+and
+[Microsoft Entra Expression Builder](https://learn.microsoft.com/en-us/entra/identity/app-provisioning/expression-builder)
 
 ##### Step 6: Set the Provisioning Scope
 
@@ -485,8 +571,10 @@ Now you need to tell Entra which users and groups should be provisioned to USAi:
 
    **Option A: Assign groups (Recommended)**
    - Click **None Selected** under **Groups**
-   - Search for and select the Entra ID groups that should have access to USAi
-   - Example groups: `USAi-Users`, `USAi-Admins`, `USAi-PowerUsers`
+   - Search for and select the source Entra ID groups configured in Step 5
+   - Confirm that every selected source group is included in the `displayName`
+     expression or already has the exact name of a supported USAi destination
+     group
    - Click **Select**, then **Assign**
    - All members of those groups will be provisioned, and group memberships will be synced
 
@@ -588,10 +676,13 @@ support tickets.
 If you're using SCIM with group-based access, here's the recommended workflow:
 
 **Initial Setup:**
-1. Create groups in your IdP for different USAi access levels (e.g., `USAi-Users`, `USAi-Admins`)
-2. Assign those groups to the USAi application
-3. Let us know which groups should map to which USAi roles
-4. Wait for the initial SCIM sync to complete
+1. Confirm the supported USAi destination groups with the USAi team
+2. Identify the source Entra group for each destination group your agency needs
+3. Configure a `displayName` Expression mapping using either the source group
+   Object ID (recommended) or display name
+4. Add users to the appropriate source IdP groups
+5. Assign those source groups to the USAi provisioning application
+6. Verify the mapping and wait for the initial SCIM sync to complete
 
 **Adding a User:**
 1. Add the user to the appropriate group(s) in your IdP
@@ -639,7 +730,7 @@ Here's a summary of everything we'll need, depending on your setup:
 |------|-----------|
 | Confirmation that you want SCIM enabled | ✅ Yes |
 | Whether you want group sync enabled | ✅ Yes |
-| List of IdP groups → USAi role mappings | If using groups |
+| Source Entra group Object ID or display name → supported USAi destination mappings | If using groups |
 
 ---
 

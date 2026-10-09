@@ -181,12 +181,83 @@ Then assign the users or groups that should be provisioned:
 
 SCIM group provisioning lets Entra send groups and membership to USAi.
 
+### Required: Map IdP Groups To Supported USAi Groups
+
+Your agency's IdP group names do not need to match USAi group names. If a source
+group has a different name, configure the `displayName` attribute with an
+**Expression** mapping that translates it to the supported USAi destination
+group. Use a **Direct** mapping only when the source and destination names
+already match exactly.
+
+The supported USAi destination groups are:
+
+| Exact group name | Access provided |
+|------------------|-----------------|
+| `Default-User` | Chat, Console, and API documentation |
+| `Admin` | Full agency administration |
+| `API Users` | Invoke the API |
+| `API-Key-Admin` | Manage API keys for agency users |
+| `API-Key-User-Short-Term` | Manage the user's own short-term API keys |
+| `Model-Manager` | Manage agency model availability and the default model |
+| `Financial-Manager` | Manage the agency API budget |
+| `Group-Manager` | Manage groups |
+
+> **Current limitation:** USAi supports SCIM provisioning only for the groups
+> listed above. Do not create or provision custom or additional groups. USAi is
+> not accommodating additional-group requests at this time.
+
+Select one source IdP group for each supported USAi destination group your
+agency will use. Add users to those source groups and assign the source groups to
+the USAi provisioning application.
+
+USAi groups already have the appropriate roles. The mapping translates the
+agency's source group name to a supported USAi group name; it does not create a
+new USAi group or authorization role.
+
 Recommended group mappings:
 
-| Microsoft Entra attribute | USAi SCIM attribute |
-|---------------------------|---------------------|
-| `displayName` | `displayName` |
-| `members` | `members` |
+| Microsoft Entra source | USAi SCIM attribute | Mapping type |
+|------------------------|---------------------|--------------|
+| `objectId` | `externalId` | Direct; keep the default mapping |
+| `objectId` or `displayName` | `displayName` | **Expression** when names differ; otherwise Direct |
+| `members` | `members` | Direct |
+
+For different source and destination names, choose one of these `Switch`
+expressions:
+
+**Option A — Object ID (recommended):** Object IDs remain stable when an agency
+renames a group. In Entra, open **Groups**, select the group, and copy its
+**Object ID** from **Overview**. Use the group Object ID—not the application
+Object ID or tenant ID.
+
+```text
+Switch([objectId], ,
+  "11111111-1111-1111-1111-111111111111", "Default-User",
+  "22222222-2222-2222-2222-222222222222", "Admin",
+  "33333333-3333-3333-3333-333333333333", "API Users")
+```
+
+**Option B — Display name:** This is easier to read, but the expression must be
+updated whenever the agency renames a source group.
+
+```text
+Switch([displayName], ,
+  "Agency USAi Users", "Default-User",
+  "Agency USAi Administrators", "Admin",
+  "Agency API Users", "API Users")
+```
+
+Leave the default value (the second argument) blank so an unmapped source group
+is not passed through as a new USAi group. Include only the supported USAi
+destinations your agency needs and assign only source groups included in the
+expression to the provisioning application.
+
+In Entra's Expression Builder, **Add another value** only adds a predefined
+source attribute or test input; it does not add a source-to-destination mapping.
+Paste the complete `Switch` expression into the mapping's **Expression** code
+box. To test it, select `objectId` and enter a group GUID for Option A, or select
+`displayName` and enter a source group name for Option B. The expression output
+should be the supported USAi destination name.
 
 To configure group provisioning:
 
@@ -196,10 +267,12 @@ To configure group provisioning:
 4. Expand **Mappings**.
 5. Open **Provision Microsoft Entra ID Groups**.
 6. Set **Enabled** to **Yes**.
-7. Confirm the `displayName` and `members` mappings.
-8. In **Target object actions**, confirm Create, Update, and Delete match your
+7. Configure the target `displayName` as an Expression mapping using either
+   `[objectId]` or `[displayName]` when names differ. Otherwise, use Direct.
+8. Confirm that `members` uses a Direct mapping.
+9. In **Target object actions**, confirm Create, Update, and Delete match your
    agency's intended behavior.
-9. Save the mapping.
+10. Save the mapping.
 
 ## Choosing A Group Model
 
@@ -207,13 +280,14 @@ Before enabling group provisioning, decide which system owns group membership.
 
 Recommended model:
 
-- Entra owns USAi access groups.
-- Agency admins add or remove users from Entra groups.
-- Entra syncs those groups and memberships to USAi through SCIM.
-- USAi maps those synced groups to the appropriate USAi roles.
+- The USAi team owns the groups and role assignments in the USAi realm.
+- The agency owns its source groups and their membership in Entra or Okta.
+- The agency maps each source group to one supported USAi destination group.
+- Agency admins add or remove users from those source IdP groups.
+- The IdP syncs group membership to the existing USAi groups through SCIM.
 
-Avoid creating disconnected duplicate groups in Entra and USAi. If the group
-names do not line up, agree on the mapping with the USAi team before turning
+Do not map a source group to a destination outside the supported list. Confirm
+the complete source-to-destination mapping with the USAi team before turning
 provisioning on.
 
 ## Deprovisioning Decisions
@@ -258,7 +332,8 @@ Before a co-work session, send:
 - Whether SCIM should manage users, groups, or both.
 - Whether SCIM should manage all existing USAi users or only newly assigned
   users.
-- The Entra groups that should be provisioned.
-- The intended mapping from Entra groups to USAi roles.
+- Whether the mapping uses Entra group Object IDs or display names.
+- Each source group Object ID or display name and its supported USAi destination.
+- The final `Switch` expression.
 - The intended deprovisioning behavior.
 - A technical contact who can view Entra or Okta provisioning logs during testing.
