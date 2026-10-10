@@ -51,6 +51,12 @@ Contact your infrastructure team to obtain:
 
 ### 2. AWS CLI Installation
 
+**Windows:** follow the [copy-and-paste PowerShell quick start](windows-powershell.md).
+It shows you how to install the AWS CLI, set up access, list and download S3 files,
+and check SQS without removing messages. You do not need Bash or `jq`.
+
+**macOS/Linux:**
+
 ```bash
 # macOS
 brew install awscli
@@ -60,12 +66,7 @@ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip
 unzip awscliv2.zip
 sudo ./aws/install
 
-# Windows (PowerShell as Administrator)
-# Download and run the MSI installer from:
-# https://awscli.amazonaws.com/AWSCLIV2.msi
-# Or use: msiexec.exe /i https://awscli.amazonaws.com/AWSCLIV2.msi
-
-# Verify installation (all platforms)
+# Verify installation
 aws --version
 ```
 
@@ -137,10 +138,13 @@ Your infrastructure team will provide:
 1. AWS Access Key ID
 2. AWS Secret Access Key
 
-**Configure AWS CLI:**
+**Configure AWS CLI (Bash, macOS/Linux):**
+
+Windows users should use the [PowerShell access setup](windows-powershell.md#2-set-up-your-access)
+instead of translating the Bash commands below.
 
 ```bash
-# Configure credentials (all platforms)
+# Configure credentials
 aws configure --profile {tenant}-logs
 # Enter Access Key ID when prompted
 # Enter Secret Access Key when prompted
@@ -148,20 +152,18 @@ aws configure --profile {tenant}-logs
 # Output format: json
 
 # Use the profile
-# macOS/Linux:
 export AWS_PROFILE={tenant}-logs
-# Windows (Command Prompt):
-set AWS_PROFILE={tenant}-logs
-# Windows (PowerShell):
-$env:AWS_PROFILE="{tenant}-logs"
 
-# Verify access (all platforms)
+# Verify identity
 aws sts get-caller-identity
 ```
 
 **Security Note:** Store access keys securely. Never commit them to source control.
 
 ## Quick Start: Manual Access
+
+The shell commands in this section use **Bash (macOS/Linux)**. For Windows,
+use the [PowerShell access checks and download commands](windows-powershell.md#3-check-your-aws-identity).
 
 ### Step 1: Check for Notifications
 
@@ -178,8 +180,6 @@ aws sqs receive-message \
   --wait-time-seconds 20 \
   --region {REGION}
 ```
-
-**Windows users:** Replace `$QUEUE_URL` with the full queue URL in all commands.
 
 **Output:** JSON with S3 object keys in the message body
 
