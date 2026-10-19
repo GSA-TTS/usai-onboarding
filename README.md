@@ -45,11 +45,13 @@ USAi currently has the following models available (or coming soon!) with current
 
 Model Name | Vendor | Price per 1M input tokens  | Price per 1M output tokens
 --- | --- | --- | --- | 
+Opus 5.5 | Anthropic | $4.40 | $22.00
 Opus 5 | Anthropic | $5.00 | $25.00
 Opus 4.8 | Anthropic | $5.00 | $25.00
 Opus 4.7 | Anthropic | $5.00 | $25.00
 Opus 4.5 | Anthropic | $5.00 | $25.00
 Opus 4 | Anthropic | $15.00 | $75.00
+Sonnet 5.5 | Anthropic | $2.00 | $10.00
 Sonnet 5 | Anthropic | $2.00 | $10.00
 Sonnet 4.6 | Anthropic | $3.00 | $15.00
 Sonnet 4.5 | Anthropic | $3.00 | $15.00
@@ -63,6 +65,12 @@ Gemini 2.5 Flash | Google | $0.30 | $2.50
 Gemini 2.5 Flash Lite | Google | $0.10 | $0.40
 Llama 4 Maverick | Meta | $0.24 | $0.97
 Llama 3.2 11B | Meta | $0.16 | $0.16
+GPT 6.1 Sol (short context) | OpenAI| $2.20 | $11.00
+GPT 6.1 Sol (long context) | OpenAI| $4.40 | $16.50
+GPT 6 Sol (short context) | OpenAI| $2.20 | $11.00
+GPT 6 Sol (long context) | OpenAI| $4.40 | $16.50
+GPT 6 Luna (short context) | OpenAI| $0.11 | $0.55
+GPT 6 Luna (long context) | OpenAI| $0.22 | $0.83
 GPT 6 Astra (short context) | OpenAI| $10.00 | $50.00
 GPT 6 Astra (long context) | OpenAI | $20.00 | $75.00
 GPT 5.6 Sol (short context) | OpenAI| $4.00 | $20.00
