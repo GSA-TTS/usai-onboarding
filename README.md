@@ -43,7 +43,7 @@ To ensure we open up the firewall to the right egress IP addresses for your agen
 ### Models to deploy
 USAi currently has the following models available (or coming soon!) with current costs shown.
 
-Model Name | Vendor | Price per 1M input tokens  | Price per 1M output tokens
+Model Name | Model Provider | Price per 1M input tokens  | Price per 1M output tokens
 --- | --- | --- | --- | 
 Opus 5.5 | Anthropic | $4.40 | $22.00
 Opus 5 | Anthropic | $5.00 | $25.00
