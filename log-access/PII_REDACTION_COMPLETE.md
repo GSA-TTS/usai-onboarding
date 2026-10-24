@@ -115,7 +115,10 @@ being embedded in the streamed event. That directly affects the paths listed abo
 exist on the streamed event, so a redactor reading only the Kinesis event has
 nothing to redact.
 
-**Not yet confirmed by the platform team** — do not assume either answer:
+**Not yet confirmed by the platform team** — do not assume either answer. This is
+being tracked in `GSA-TTS/usai-console-pipeline` issue #84, which flags that the
+redaction job currently enumerates only the dated `{YEAR}/{MONTH}/{DAY}/` prefix
+and so would not read the new `chat/` and `api/` context-history objects:
 
 - Whether the REDACTED pipeline also splits, or continues to emit inline
   `prompt_redacted` / `response_redacted` content.
@@ -123,8 +126,9 @@ nothing to redact.
   path, or exists only on the raw path.
 - Whether `truncated` is retired from the redacted event as well as the raw event.
 
-This document describes the redaction behavior in production today. It will be
-updated once the split's redaction design is published.
+Until those are answered, treat the split as affecting the **raw stream only**.
+This document describes the redaction behavior in production today, and will be
+updated once the split's redaction design is confirmed.
 
 ---
 
