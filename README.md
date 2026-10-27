@@ -41,57 +41,16 @@ To ensure we open up the firewall to the right egress IP addresses for your agen
 - **Note:** it usually takes the GSA team 7 days to make the firewall updates, so this item is a little time-sensitive.
 
 ### Models to deploy
-USAi currently has the following models available (or coming soon!) with current costs shown.
+USAi offers models from Anthropic, Google, Meta, OpenAI, and xAI. Model availability may change as models are added, updated, or retired. You can enable or disable models in Models Manager.
 
-Model Name | Model Provider | Price per 1M input tokens  | Price per 1M output tokens
---- | --- | --- | --- | 
-Opus 5.5 | Anthropic | $4.40 | $22.00
-Opus 5 | Anthropic | $5.00 | $25.00
-Opus 4.8 | Anthropic | $5.00 | $25.00
-Opus 4.7 | Anthropic | $5.00 | $25.00
-Opus 4.5 | Anthropic | $5.00 | $25.00
-Opus 4 | Anthropic | $15.00 | $75.00
-Sonnet 5.5 | Anthropic | $2.00 | $10.00
-Sonnet 5 | Anthropic | $2.00 | $10.00
-Sonnet 4.6 | Anthropic | $3.00 | $15.00
-Sonnet 4.5 | Anthropic | $3.00 | $15.00
-Sonnet 4 | Anthropic | $3.00 | $15.00
-Haiku 4.5 | Anthropic | $1.00 | $5.00
-Gemini 3.8 Flash | Google | $0.75 | $3.75
-Gemini 3.7 Flash | Google | $0.75 | $3.75 
-Gemini 3.5 Flash | Google | $1.50 | $9.00
-Gemini 2.5 Pro | Google | $1.25 | $10.00
-Gemini 2.5 Flash | Google | $0.30 | $2.50
-Gemini 2.5 Flash Lite | Google | $0.10 | $0.40
-Llama 4 Maverick | Meta | $0.24 | $0.97
-Llama 3.2 11B | Meta | $0.16 | $0.16
-GPT 6.1 Sol (short context) | OpenAI| $2.20 | $11.00
-GPT 6.1 Sol (long context) | OpenAI| $4.40 | $16.50
-GPT 6 Sol (short context) | OpenAI| $2.20 | $11.00
-GPT 6 Sol (long context) | OpenAI| $4.40 | $16.50
-GPT 6 Luna (short context) | OpenAI| $0.11 | $0.55
-GPT 6 Luna (long context) | OpenAI| $0.22 | $0.83
-GPT 6 Astra (short context) | OpenAI| $10.00 | $50.00
-GPT 6 Astra (long context) | OpenAI | $20.00 | $75.00
-GPT 5.6 Sol (short context) | OpenAI| $4.00 | $20.00
-GPT 5.6 Sol (long context) | OpenAI | $8.00 | $30.00
-GPT 5.6 Terra (short context) | OpenAI | $2.00 | $12.00
-GPT 5.6 Terra (long context) | OpenAI | $4.00 | $18.00
-GPT 5.6 Luna (short context) | OpenAI | $0.20 | $1.20
-GPT 5.6 Luna (long context) | OpenAI | $0.40 | $1.80
-GPT 5.5 (short context) | OpenAI | $5.00 | $30.00
-GPT 5.5 (long context) | OpenAI | $10.00 | $45.00
-GPT 5.4 (short context) | OpenAI | $2.50 | $15.00
-GPT 5.4 (long context)| OpenAI | $5.00 | $22.50
-GPT 5.2 | OpenAI | $1.75 | $14.00
-Grok 4.6 (short context)| xAI | $2.00 | $6.00
-Grok 4.6 (long context)| xAI | $4.00 | $12.00
-Grok 4.3 (short context)| xAI | $1.25 | $2.50
-Grok 4.3 (long context)| xAI | $2.50 | $5.00
-Grok 4.2 (short context) | xAI | $1.25 | $2.50
-Grok 4.2 (long context) | xAI | $2.50 | $5.00
+#### Model pricing
 
-*Short context is optimized for smaller requests, while long context supports larger inputs and more complex workflows.
+Model prices change frequently and can vary by cloud provider, deployment geography, service tier, context length, modality, and prompt-caching usage. Please refer to the cloud providers’ official pricing pages for token prices:
+
+- [Amazon Bedrock pricing](https://aws.amazon.com/bedrock/pricing/) — Anthropic Claude, Meta Llama, and applicable xAI models. For USAi deployments, review the applicable **Geo cross-region or in-region Standard** rate.
+- [Google Cloud Vertex AI generative AI pricing](https://cloud.google.com/vertex-ai/generative-ai/pricing) — Google Gemini models. For USAi deployments, review the applicable **Non-global Standard** rate.
+- [Azure OpenAI pricing](https://azure.microsoft.com/en-us/pricing/details/azure-openai/) — OpenAI models deployed through Microsoft Foundry. Review the applicable **Data Zone Standard** geography and short- or long-context pricing band.
+- [Microsoft Foundry Models pricing](https://azure.microsoft.com/en-us/pricing/details/ai-foundry-models/grok/) — xAI Grok and other third-party models deployed through Microsoft Foundry.
 
 ### System prompts
 
