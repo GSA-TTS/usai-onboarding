@@ -2,6 +2,11 @@
 
 **Get up and running in 10 minutes**
 
+**Windows users:** start with the [copy-and-paste PowerShell quick start](windows-powershell.md).
+It includes commands to download and install the AWS CLI, check your access,
+find log files in S3, and download a file. The shell examples on this page use
+**Bash (macOS/Linux)**.
+
 ---
 
 ## What You're Getting
@@ -52,6 +57,8 @@ BUCKET_NAME="YOUR_S3_BUCKET_NAME"
 ## Setup (5 minutes)
 
 ### Step 1: Install AWS CLI
+
+For Windows, use the [PowerShell installation commands](windows-powershell.md#1-download-and-install-the-aws-cli).
 
 ```bash
 # macOS
@@ -251,6 +258,7 @@ Dead Letter Queue should be empty. If you receive an alert, see the [DLQ Investi
 
 | Topic | Document |
 |-------|----------|
+| Windows install, access checks, and downloads | [PowerShell Quick Start](./windows-powershell.md) |
 | Complete setup reference | [Log Access Guide](./log-access-guide.md) |
 | Raw vs redacted logs | [Raw vs Redacted](./raw-vs-redacted-logs.md) |
 | PII redaction methodology | [PII Redaction Complete](./PII_REDACTION_COMPLETE.md) |
