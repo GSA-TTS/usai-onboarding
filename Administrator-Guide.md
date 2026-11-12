@@ -20,7 +20,7 @@ Users in the **Admin** or **Group-Manager** groups have the authority to manage 
 |---|---|
 | `API-Key-Admin` | Can manage API keys for any user within the agency. |
 | `API-Key-User-Short-Term` | Can manage their individual short-term API keys. |
-| `Admin` | Can manage Groups, API keys, system prompts, models, API budgets, Projects, and API keys for Projects. |
+| `Admin` | Can manage Groups, API keys, system prompts, models, API budgets, and Projects. |
 | `Default-User` | Can access Chat, Console, and API documentation. |
 | `Group-Manager` | Can manage Groups. |
 | `Model-Manager` | Can manage agency model availability and the default model. |
@@ -73,7 +73,7 @@ Tenant (for example, GSA or USDA)
 └── Projects — each has its own members, managers, and weekly budget
     └── Project
         ├── Personal keys (7 days) — any member
-        ├── Service keys (90 days) — managers only
+        ├── Service keys (90 days) — project managers only
         └── Sub-projects
             └── Sub-project — its own members, managers, budget, keys
 
@@ -96,7 +96,7 @@ Being a Tenant Admin lets you manage a Project, but it does not make you a membe
 
 ## Create a Project
 
-All Projects must be created by an Admin or Financial Manager.
+All Projects must be created by an Admin or Financial Manager. Financial Managers can create projects and assign budgets, but only Admins can assign members to projects.
 
 1. **Create a Project:** In the USAi Console navigation menu, open the **Projects** section to view existing agency Projects, or click **Create Project** to establish a new Project.
 2. **Nest Projects:** Projects can be nested to whatever level you’d like—for example, `USA > Pennsylvania > Philadelphia > Old City > Liberty Bell`. Choose a structure that makes sense for your organization.
@@ -142,7 +142,7 @@ USAi does not currently stop service keys from being used outside system integra
 #### Tenant-Level Roles (Assigned Through Groups)
 
 - **Admin:** Has full authority to create Projects, including sub-projects, and add or remove Project members and Project managers. They can't create or manage API keys associated with a Project unless they are a member of that Project.
-- **Financial Manager:** Has full authority to create Projects, including sub-projects, and add or remove Project members and Project managers. They can't create or manage API keys associated with a Project unless they are a member of that Project.
+- **Financial Manager:** Has full authority to create Projects, including sub-projects, and assign budget. They can't add or remove Project members and Project managers. They can't create or manage API keys associated with a Project unless they are a member of that Project.
 
 #### Project-Level Roles (Assigned Through Project Membership)
 
