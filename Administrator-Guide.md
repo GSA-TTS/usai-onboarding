@@ -19,8 +19,8 @@ Users in the **Admin** or **Group-Manager** groups have the authority to manage 
 | Group Name | Description |
 |---|---|
 | `API-Key-Admin` | Can manage API keys for any user within the agency. |
-| `API-Key-User-Short-Term` | Can manage their short-term API keys. |
-| `Admin` | Can manage Groups, API keys, system prompts, models, API budgets, Projects, and long-duration API keys for Projects. |
+| `API-Key-User-Short-Term` | Can manage their individual short-term API keys. |
+| `Admin` | Can manage Groups, API keys, system prompts, models, API budgets, Projects, and API keys for Projects. |
 | `Default-User` | Can access Chat, Console, and API documentation. |
 | `Group-Manager` | Can manage Groups. |
 | `Model-Manager` | Can manage agency model availability and the default model. |
@@ -38,7 +38,7 @@ More detailed trustworthiness analysis of the Azure models (GPT, Grok) is availa
 
 Admins and users in the **API-Key-Admin** group have access to **API Key Management**. This interface allows them to rotate, revoke, or delete all API keys within an agency. For example, an API key may need to be deactivated if someone accidentally checks it into GitHub, rotated while its owner is out of the office, or disabled when someone leaves the agency.
 
-Additionally, individuals in the **Admin** and **Financial-Manager** groups can modify the API Budget. The API Budget manages a per-person weekly budget for API keys. Each user in the **API-Key-User-Short-Term** group can create their own short-duration, personal API keys for use with the USAi API. The budget tracks the total amount of token spend across all keys an individual creates for themselves.
+Additionally, individuals in the **Admin** and **Financial-Manager** groups can modify the individual API Budget. The API Budget manages a per-person weekly budget for individual API keys. Each user in the **API-Key-User-Short-Term** group can create their own short-duration, personal API keys for use with the USAi API. The budget tracks the total amount of token spend across all keys an individual creates for themselves.
 
 For example, an Admin navigates to the API Budget page and enters a weekly budget of $500. Joe Smith can then use up to $500 worth of tokens through the USAi API each week, from Monday through Sunday. If Joe reaches $500 in token spend during any week, the API will return an error (`429: budget limit reached for this billing cycle`), and Joe will not be able to use the API until the next week.
 
@@ -84,7 +84,7 @@ USAi is introducing Projects as a structure to help organize and track platform 
 
 Two things control permissions:
 
-- **Named Groups** control tenant-level roles, such as Admin, Finance Admin, and API key admin.
+- **Named Groups** control tenant-level roles, such as Admin, Financial Manager, and API key admin.
 - **Project membership** controls project-level permissions. Each Project has its own members and managers.
 
 Being a Tenant Admin lets you manage a Project, but it does not make you a member of it. To create keys in a Project, you must be added to that Project.
@@ -119,12 +119,12 @@ Project keys can be administered in the following ways.
 
 ### Tenant-Level Roles (Assigned Through Groups)
 
-- **Admin:** Has full authority to create Projects, including sub-projects, and add or remove Project members and Project managers. Cannot create or manage API keys associated with a Project unless they are a member of that Project.
-- **API key admin:** Can take action on existing API keys, including Project keys, such as rotating and disabling them. Cannot create keys in a Project unless they are a member of that Project.
+- **Admin:** Has full authority to create Projects, including sub-projects, and add or remove Project members and Project managers. They can't create or manage API keys associated with a Project unless they are a member of that Project.
+- **API key admin:** Can take action on existing API keys, including Project keys, such as rotating and disabling them. They can't create keys in a Project unless they are a member of that Project.
 
 ### Project-Level Roles (Assigned Through Project Membership)
 
-- **Project manager:** Can create service (90-day) and personal (7-day) keys, rotate and disable any key in the Project, and add or remove Project managers and members.
+- **Project manager:** Can create service (90-day) and personal (7-day) keys, rotate and disable their project keys / service keys, and add or remove Project managers and members.
 - **Project member:** Can create personal (7-day) keys and rotate or disable their own keys.
 
 ## Administering Projects
@@ -141,12 +141,12 @@ USAi does not currently stop service keys from being used outside system integra
 
 #### Tenant-Level Roles (Assigned Through Groups)
 
-- **Admin:** Has full authority to create Projects, including sub-projects, and add or remove Project members and Project managers. Cannot create or manage API keys associated with a Project unless they are a member of that Project.
-- **Financial Manager:** Has full authority to create Projects, including sub-projects, and add or remove Project members and Project managers. Cannot create or manage API keys associated with a Project unless they are a member of that Project.
+- **Admin:** Has full authority to create Projects, including sub-projects, and add or remove Project members and Project managers. They can't create or manage API keys associated with a Project unless they are a member of that Project.
+- **Financial Manager:** Has full authority to create Projects, including sub-projects, and add or remove Project members and Project managers. They can't create or manage API keys associated with a Project unless they are a member of that Project.
 
 #### Project-Level Roles (Assigned Through Project Membership)
 
-- **Project manager:** Can create service (90-day) and personal (7-day) keys, rotate and disable any key in the Project, and add or remove Project managers and members.
+- **Project manager:** Can create service (90-day) and personal (7-day) keys, rotate and disable their keys / service keys, and add or remove Project managers and members.
 - **Project member:** Can create personal (7-day) keys and rotate or disable their own keys.
 
 ### How Projects Differ from Groups
