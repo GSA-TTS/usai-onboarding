@@ -89,14 +89,9 @@ Two things control permissions:
 
 Being a Tenant Admin lets you manage a Project, but it does not make you a member of it. To create keys in a Project, you must be added to that Project.
 
-### Key Types
-
-- **Personal project keys:** Short-duration API keys (7 days) intended for individual use, such as experimentation, prototyping, exploratory work, and project implementation.
-- **Service project keys:** Long-duration API keys (90 days) intended to connect applications to the USAi API. Each service key must be associated with a Project and can support application workloads, including production use.
-
 ## Create a Project
 
-All Projects must be created by an Admin or Financial Manager. Financial Managers can create projects and assign budgets, but only Admins can assign members to projects.
+All Projects must be created by an Admin or Financial Manager. Financial Managers can create projects and assign budgets, but only Admins can assign initial members to projects.
 
 1. **Create a Project:** In the USAi Console navigation menu, open the **Projects** section to view existing agency Projects, or click **Create Project** to establish a new Project.
 2. **Nest Projects:** Projects can be nested to whatever level you’d like—for example, `USA > Pennsylvania > Philadelphia > Old City > Liberty Bell`. Choose a structure that makes sense for your organization.
@@ -124,7 +119,7 @@ Project keys can be administered in the following ways.
 
 ### Project-Level Roles (Assigned Through Project Membership)
 
-- **Project manager:** Can create service (90-day) and personal (7-day) keys, rotate and disable their project keys / service keys, and add or remove Project managers and members.
+- **Project manager:** Can create service (90-day) and personal (7-day) keys, rotate and disable their project keys / service keys, and add or remove Project managers and members. Project managers can manage membership for all downstream projects in their nested hiearchy.
 - **Project member:** Can create personal (7-day) keys and rotate or disable their own keys.
 
 ## Administering Projects
@@ -146,7 +141,7 @@ USAi does not currently stop service keys from being used outside system integra
 
 #### Project-Level Roles (Assigned Through Project Membership)
 
-- **Project manager:** Can create service (90-day) and personal (7-day) keys, rotate and disable their keys / service keys, and add or remove Project managers and members.
+- **Project manager:** Can create service (90-day) and personal (7-day) keys, rotate and disable their keys / service keys, and add or remove Project managers and members. Project managers can manage membership for all downstream projects in their nested hiearchy.
 - **Project member:** Can create personal (7-day) keys and rotate or disable their own keys.
 
 ### How Projects Differ from Groups
