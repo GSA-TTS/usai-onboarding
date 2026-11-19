@@ -51,19 +51,33 @@ BUCKET_NAME="YOUR_S3_BUCKET_NAME"
 
 ## Setup (5 minutes)
 
-### Step 1: Install AWS CLI
+### Step 1: Install Required Tools
+
+You need two CLI tools: the **AWS CLI** (to talk to SQS/S3) and **jq** (to parse the
+JSON log files used throughout this guide).
 
 ```bash
 # macOS
-brew install awscli
+brew install awscli jq
 
-# Linux
+# Linux (Debian/Ubuntu)
+sudo apt-get update && sudo apt-get install -y unzip jq
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip && sudo ./aws/install
 
-# Verify
+# Windows (PowerShell)
+winget install -e --id Amazon.AWSCLI
+winget install -e --id jqlang.jq
+
+# Verify (all platforms)
 aws --version
+jq --version
 ```
+
+> **No `winget`?** Download the AWS CLI MSI installer from
+> [awscli.amazonaws.com/AWSCLIV2.msi](https://awscli.amazonaws.com/AWSCLIV2.msi) and the
+> `jq` Windows binary from [jqlang.github.io/jq/download](https://jqlang.github.io/jq/download/),
+> then run each installer manually.
 
 ### Step 2: Configure Credentials
 
@@ -104,7 +118,16 @@ aws s3 ls s3://${BUCKET_NAME}/ --region ${AWS_REGION}
 
 ## Download Logs (Manual)
 
+**Required tools:** AWS CLI and `jq` (installed in [Setup](#setup-5-minutes) above).
+
+> **Windows:** The commands below use Unix shell syntax (`cat`, `head`, `\` line
+> continuation) and won't run as-is in Command Prompt. Use **Git Bash** or **WSL**
+> (`wsl --install` from an Administrator PowerShell) to run the macOS/Linux block
+> unmodified, or use the native PowerShell block below.
+
 ```bash
+# macOS / Linux (or Windows via Git Bash / WSL)
+
 # 1. Poll queue for notifications
 aws sqs receive-message \
   --queue-url ${QUEUE_URL} \
@@ -120,6 +143,26 @@ aws s3 cp s3://${BUCKET_NAME}/[KEY] ./log.json --region ${AWS_REGION}
 
 # 4. View contents
 head -5 log.json | jq .
+```
+
+```powershell
+# Windows (native PowerShell)
+
+# 1. Poll queue for notifications
+aws sqs receive-message `
+  --queue-url $env:QUEUE_URL `
+  --max-number-of-messages 10 `
+  --wait-time-seconds 20 `
+  --region $env:AWS_REGION | Out-File messages.json
+
+# 2. Extract S3 key
+Get-Content messages.json | jq -r '.Messages[0].Body | fromjson | .Message | fromjson | .Records[0].s3.object.key'
+
+# 3. Download file (replace KEY with output from step 2)
+aws s3 cp s3://$env:BUCKET_NAME/[KEY] ./log.json --region $env:AWS_REGION
+
+# 4. View contents
+Get-Content log.json -Head 5 | jq .
 ```
 
 ---
@@ -236,7 +279,7 @@ Dead Letter Queue should be empty. If you receive an alert, see the [DLQ Investi
 
 ## Quick Checklist
 
-- [ ] AWS CLI installed
+- [ ] AWS CLI and `jq` installed
 - [ ] Credentials configured
 - [ ] Identity verified (Test 1)
 - [ ] Queue accessible (Test 2)
@@ -270,4 +313,4 @@ Dead Letter Queue should be empty. If you receive an alert, see the [DLQ Investi
 
 ---
 
-**Last Updated:** 2026-02-17
+**Last Updated:** 2026-11-19
